@@ -23,14 +23,14 @@ acceptance-test: single-node-test cluster-unicast-test
 single-node-test: export ES_NODE_COUNT=1
 single-node-test: pull-latest-baseimage
 	docker-compose up -d --build elasticsearch1
-	docker-compose up --build tester
+	docker-compose up --build --abort-on-container-exit tester
 	docker-compose stop
 	docker-compose rm -f
 
 cluster-unicast-test: export ES_NODE_COUNT=2
 cluster-unicast-test: pull-latest-baseimage
 	docker-compose up -d --build elasticsearch1 elasticsearch2
-	docker-compose up --build tester
+	docker-compose up --build --abort-on-container-exit tester
 	docker-compose stop
 	docker-compose rm -f
 

@@ -11,6 +11,21 @@ Available tags:
 - 5.0.0-alpha5
 - latest -> 5.0.0-alpha5
 
+## Host Prerequisites
+
+### Linux
+
+`vm.max_map_count` sysctl must be set to at least `262144`
+
+This needs to be set permanently in /etc/sysctl.conf:
+
+``` shell
+$ grep vm.max_map_count /etc/sysctl.conf
+vm.max_map_count=262144
+```
+
+And apply the setting using: `sysctl -w vm.max_map_count=262144`
+
 ## Using the image
 
 To save some keystrokes first set:
