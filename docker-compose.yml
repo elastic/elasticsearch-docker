@@ -1,0 +1,70 @@
+---
+version: '2'
+services:
+  # Can't use service elasticsearch=<num> for now due to named volumes
+  elasticsearch1:
+  # Equivalent to:
+  # docker run --rm --cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536 -t -P --memory="4g" -e ES_JAVA_OPTS="-Xms2g -Xmx2g" -v esdata:/usr/share/elasticsearch/data elasticsearch:5.0.0-alpha5 bin/elasticsearch
+    build:
+      context: build/elasticsearch
+      args:
+        ELASTICSEARCH_VERSION: "${ELASTICSEARCH_VERSION}"
+    cap_add:
+      - IPC_LOCK
+    command: bin/elasticsearch -E discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
+    environment:
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    image: "elasticsearch:${ELASTICSEARCH_VERSION}"
+    mem_limit: 4g
+    ports:
+      - 9200
+      - 9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+  elasticsearch2:
+    build:
+      context: build/elasticsearch
+      args:
+        ELASTICSEARCH_VERSION: "${ELASTICSEARCH_VERSION}"
+    cap_add:
+      - IPC_LOCK
+    command: bin/elasticsearch -E discovery.zen.ping.unicast.hosts=elasticsearch1 -E discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
+    environment:
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    image: "elasticsearch:${ELASTICSEARCH_VERSION}"
+    links:
+      - elasticsearch1
+    mem_limit: 4g
+    ports:
+      - 9200
+      - 9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+  tester:
+    build:
+      context: build/python
+    command: py.test tests
+    image: "tester:latest"
+    links:
+      - elasticsearch1:elasticsearch
+    volumes:
+      - $PWD/tests:/home/testuser/tests
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
