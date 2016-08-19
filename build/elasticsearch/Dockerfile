@@ -8,6 +8,8 @@ WORKDIR /usr/share/elasticsearch
 
 # Download/extract defined ES version. busybox tar can't strip leading dir.
 RUN wget http://repo1.maven.org/maven2/org/elasticsearch/distribution/tar/elasticsearch/${ELASTICSEARCH_VERSION}/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz && \
+    EXPECTED_SHA=$(wget -O - http://repo1.maven.org/maven2/org/elasticsearch/distribution/tar/elasticsearch/${ELASTICSEARCH_VERSION}/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz.sha1) && \
+    test $EXPECTED_SHA == $(sha1sum elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz | awk '{print $1}') && \
     tar zxf elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz && \
     chown -R elasticsearch:elasticsearch elasticsearch-${ELASTICSEARCH_VERSION} && \
     mv elasticsearch-${ELASTICSEARCH_VERSION}/* . && \
