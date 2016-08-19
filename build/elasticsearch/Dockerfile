@@ -20,8 +20,6 @@ RUN set -ex && for path in data logs config config/scripts; do \
 COPY logging.yml /usr/share/elasticsearch/config/
 COPY elasticsearch.yml /usr/share/elasticsearch/config/
 
-RUN rm -rf /var/cache/apk/*
-
 USER elasticsearch
 
 CMD ["/bin/sh", "bin/elasticsearch"]
