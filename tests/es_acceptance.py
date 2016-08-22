@@ -44,7 +44,7 @@ def wait_for_cluster_health(desired_state):
             "Elasticsearch cluster health is not: '%s'".format(desired_state))
 
 
-@retry(stop_max_attempt_number=8, wait_exponential_multiplier=100)
+@retry(stop_max_attempt_number=8, wait_exponential_multiplier=400, wait_exponential_max=60000)
 def wait_for_elasticsearch():
     try:
         reply = requests.get('http://elasticsearch:9200')
