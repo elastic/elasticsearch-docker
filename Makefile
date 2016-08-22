@@ -12,6 +12,10 @@ CONTAINERREGISTRY_IMAGE=container-registry.elastic.co/elasticsearch/elasticsearc
 pull-latest-baseimage:
 	docker pull $(BASEIMAGE)
 
+# Clean up left over containers and volumes from earlier failed runs
+clean-up-from-last-runs:
+	docker-compose down -v && docker-compose rm -f -v
+
 run-es-single: pull-latest-baseimage
 	ES_NODE_COUNT=1 docker-compose up --build elasticsearch1
 
@@ -21,23 +25,18 @@ run-es-cluster: pull-latest-baseimage
 acceptance-test: single-node-test cluster-unicast-test
 
 single-node-test: export ES_NODE_COUNT=1
-single-node-test: pull-latest-baseimage
-	docker-compose stop && docker-compose rm -f # Clean up left over images from earlier failed runs
+single-node-test: pull-latest-baseimage clean-up-from-last-runs
 	docker-compose up -d --build elasticsearch1
 	docker-compose build tester
 	docker-compose run tester
-	docker-compose stop
-	docker-compose rm -f
+	docker-compose down -v
 
 cluster-unicast-test: export ES_NODE_COUNT=2
-cluster-unicast-test: pull-latest-baseimage
-	docker-compose stop && docker-compose rm -f # Clean up left over images from earlier failed runs
+cluster-unicast-test: pull-latest-baseimage clean-up-from-last-runs
 	docker-compose up -d --build elasticsearch1 elasticsearch2
-	sleep 30 # Allow the cluster enough time to form
 	docker-compose build tester
 	docker-compose run tester
-	docker-compose stop
-	docker-compose rm -f
+	docker-compose down -v
 
 # Build docker image: "elasticsearch:$(ELASTICSEARCH_VERSION)"
 build-es: acceptance-test

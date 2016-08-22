@@ -15,12 +15,17 @@ RUN wget http://repo1.maven.org/maven2/org/elasticsearch/distribution/tar/elasti
     mv elasticsearch-${ELASTICSEARCH_VERSION}/* . && \
     rmdir elasticsearch-${ELASTICSEARCH_VERSION} && \
     rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
-RUN set -ex && for path in data logs config config/scripts; do \
-        mkdir -p "$path"; \
-        chown -R elasticsearch:elasticsearch "$path"; \
+
+RUN set -ex && for esdirs in config data logs; do \
+        mkdir -p "$esdirs"; \
+        chown -R elasticsearch:elasticsearch "$esdirs"; \
     done
+
 COPY logging.yml /usr/share/elasticsearch/config/
 COPY elasticsearch.yml /usr/share/elasticsearch/config/
+
+RUN chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/logging.yml && \
+    chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml
 
 USER elasticsearch
 
