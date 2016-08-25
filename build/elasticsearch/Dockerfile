@@ -1,4 +1,4 @@
-FROM container-registry.elastic.co/elasticsearch/elasticsearch-ci-base:latest
+FROM container-registry.elastic.co/elasticsearch/elasticsearch-alpine-base:latest
 ARG ELASTICSEARCH_VERSION
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk

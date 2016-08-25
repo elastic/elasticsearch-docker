@@ -6,7 +6,7 @@ endif
 export ELASTICSEARCH_VERSION
 
 ELASTIC_REGISTRY=container-registry.elastic.co
-BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-ci-base:latest
+BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
 CONTAINERREGISTRY_ESIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(ELASTICSEARCH_VERSION)
 CONTAINERREGISTRY_ESIMAGE_LATESTTAG=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
 

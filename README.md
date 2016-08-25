@@ -109,7 +109,7 @@ The images have been tested on Docker 1.12.
 
 ## Contributing, issues and testing
 
-This image is built on top of `container-registry.elastic.co/elasticsearch-ci-base:latest` and is based on [alpine:latest](https://hub.docker.com/_/alpine/).
+This image is built on top of [elasticsearch-alpine-base](https://github.com/elastic/elasticsearch-alpine-base) and is based on [alpine:latest](https://hub.docker.com/_/alpine/).
 The complete set of Elasticsearch tests is [regularly executed](https://elasticsearch-ci.elastic.co/view/Elasticsearch/job/elastic+elasticsearch+master+dockeralpine-periodic/) against it.
 
 To report issues, please open an issue in [GitHub](https://github.com/elastic/elasticsearch-docker/issues).
