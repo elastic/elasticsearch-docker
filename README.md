@@ -97,7 +97,7 @@ Elasticsearch logs go to the console.
 
 This can be done in two ways.
 
-- create your own `elasticsearch.yml` conf file and override the one shipped by the image using `-v local_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml`
+- create your own `custom_elasticsearch.yml` conf file and override the one shipped by the image using `-v custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml`
 
 - pass the parameters as docker env vars via the cli. Examples:
 
@@ -112,9 +112,9 @@ The images have been tested on Docker 1.12.
 This image is built on top of `container-registry.elastic.co/elasticsearch-ci-base:latest` and is based on [alpine:latest](https://hub.docker.com/_/alpine/).
 The complete set of Elasticsearch tests is [regularly executed](https://elasticsearch-ci.elastic.co/view/Elasticsearch/job/elastic+elasticsearch+master+dockeralpine-periodic/) against it.
 
-To report issues, please open an issue in GitHub.
+To report issues, please open an issue in [GitHub](https://github.com/elastic/elasticsearch-docker/issues).
 
-To contribute, please fork and create a PR. Please ensure that tests pass by running `make single-node-test` and `make cluster-unicast-test` first. Test require [docker-compose](https://docs.docker.com/compose/install/)
+To contribute, please fork and create a PR. Please ensure that tests pass by running `make acceptance-test`. Tests require [docker-compose](https://docs.docker.com/compose/install/).
 
 ## Known issues
 
