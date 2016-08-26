@@ -1,4 +1,6 @@
 FROM container-registry.elastic.co/elasticsearch/elasticsearch-alpine-base:latest
+MAINTAINER Elastic Docker Team <docker@elastic.co>
+
 ARG ELASTICSEARCH_VERSION
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
@@ -28,6 +30,9 @@ RUN chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/logging.ym
     chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml
 
 USER elasticsearch
+
+# Install xpack
+RUN elasticsearch-plugin install --batch x-pack
 
 CMD ["/bin/sh", "bin/elasticsearch"]
 

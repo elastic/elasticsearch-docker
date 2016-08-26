@@ -57,7 +57,7 @@ services:
   tester:
     build:
       context: build/python
-    command: py.test tests
+    command: py.test tests/test_xpack_basic_index_crud.py
     image: "tester:latest"
     links:
       - elasticsearch1:elasticsearch
