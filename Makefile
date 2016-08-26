@@ -17,6 +17,8 @@ pull-latest-baseimage:
 # Clean up left over containers and volumes from earlier failed runs
 clean-up-from-last-runs:
 	docker-compose down -v && docker-compose rm -f -v
+	rm -rf tests/__pycache__
+	rm tests/*.pyc
 
 run-es-single: pull-latest-baseimage
 	ES_NODE_COUNT=1 docker-compose up --build elasticsearch1
