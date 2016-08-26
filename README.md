@@ -1,6 +1,7 @@
 ## Description
 
 This is the official Elasticsearch image created by Elastic Inc.
+Elasticsearch is built with [x-pack](https://www.elastic.co/guide/en/x-pack/current/index.html)
 
 ## Image tags and hosting
 
@@ -13,7 +14,7 @@ Available tags:
 
 ## Host Prerequisites
 
-### Linux
+### Linux and [Docker for Mac](https://docs.docker.com/engine/installation/mac/#/docker-for-mac)
 
 `vm.max_map_count` sysctl must be set to at least `262144`
 
@@ -25,6 +26,16 @@ vm.max_map_count=262144
 ```
 
 And apply the setting using: `sysctl -w vm.max_map_count=262144`
+
+
+### OSX with [Docker Toolbox](https://docs.docker.com/engine/installation/mac/#docker-toolbox)
+
+The sysctl value needs to be set via docker-machine:
+
+``` shell
+docker-machine ssh
+sudo sysctl -w vm.max_map_count=262144
+```
 
 ## Using the image
 
@@ -60,11 +71,18 @@ docker run -d -p 9200:9200 -v esdatavolume1:/usr/share/elasticsearch/data --name
 docker run -d -P -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0-alpha5 bin/elasticsearch -E discovery.zen.minimum_master_nodes=2 -E discovery.zen.ping.unicast.hosts=elasticsearch1
 ```
 
+### Security note
+
+Note that [x-pack](https://www.elastic.co/guide/en/x-pack/current/index.html) is preinstalled in this image.
+Please take a few minutes to familiarize yourself with the [x-pack security](https://www.elastic.co/guide/en/x-pack/current/security-getting-started.html). The default password is `changeme`.
+
 ###### Inspect status of cluster:
 
+
 ```shell
-curl http://127.0.0.1:9200/_cat/health
-1471855299 08:41:39 docker-cluster green 2 2 0 0 0 0 0 0 - 100.0%
+curl -u elastic http://127.0.0.1:9200/_cat/health
+Enter host password for user 'elastic':
+1472225929 15:38:49 docker-cluster green 2 2 4 2 0 0 0 0 - 100.0%
 ```
 
 ### Logging
