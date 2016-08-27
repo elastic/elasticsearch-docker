@@ -4,7 +4,7 @@ services:
   # Can't use service elasticsearch=<num> for now due to named volumes
   elasticsearch1:
   # Equivalent to:
-  # docker run --rm --cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536 -t -P --memory="4g" -e ES_JAVA_OPTS="-Xms2g -Xmx2g" -v esdata:/usr/share/elasticsearch/data elasticsearch:5.0.0-alpha5 bin/elasticsearch
+  # docker run --rm --cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536 -t -P --memory="4g" -v esdata:/usr/share/elasticsearch/data elasticsearch:5.0.0-alpha5 bin/elasticsearch
     build:
       context: build/elasticsearch
       args:
@@ -12,8 +12,6 @@ services:
     cap_add:
       - IPC_LOCK
     command: bin/elasticsearch -E discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
-    environment:
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
     image: "elasticsearch:${ELASTICSEARCH_VERSION}"
     mem_limit: 4g
     ports:
