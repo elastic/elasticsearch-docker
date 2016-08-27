@@ -74,7 +74,7 @@ docker run -d -P -v esdatavolume2:/usr/share/elasticsearch/data --name elasticse
 ### Security note
 
 Note that [x-pack](https://www.elastic.co/guide/en/x-pack/current/index.html) is preinstalled in this image.
-Please take a few minutes to familiarize yourself with the [x-pack security](https://www.elastic.co/guide/en/x-pack/current/security-getting-started.html). The default password is `changeme`.
+Please take a few minutes to familiarize yourself with the [x-pack security](https://www.elastic.co/guide/en/x-pack/current/security-getting-started.html) and how to change default passwords. The default password for the `elastic` user is `changeme`.
 
 ###### Inspect status of cluster:
 

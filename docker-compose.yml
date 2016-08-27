@@ -17,7 +17,7 @@ services:
     image: "elasticsearch:${ELASTICSEARCH_VERSION}"
     mem_limit: 4g
     ports:
-      - 9200
+      - 9200:9200
       - 9300
     ulimits:
       memlock:
