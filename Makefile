@@ -10,6 +10,8 @@ BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
 CONTAINERREGISTRY_ESIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(ELASTICSEARCH_VERSION)
 CONTAINERREGISTRY_ESIMAGE_LATESTTAG=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
 
+.PHONY: acceptance-test build-es clean-up-from-last-runs cluster-unicast-test publish-elasticsearch-to-container-registry pull-latest-baseimage run-es-cluster run-es-single single-node-test
+
 # Common target to ensure BASEIMAGE is latest
 pull-latest-baseimage:
 	docker pull $(BASEIMAGE)
