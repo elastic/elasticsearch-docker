@@ -4,7 +4,6 @@ MAINTAINER Elastic Docker Team <docker@elastic.co>
 ARG ELASTICSEARCH_VERSION
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
-ENV ES_JAVA_OPTS "-Xms2g -Xms2g"
 
 WORKDIR /usr/share/elasticsearch
 
