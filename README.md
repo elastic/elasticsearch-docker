@@ -9,8 +9,8 @@ The image is hosted in Elastic's own docker registry: `container-registry.elasti
 
 Available tags:
 
-- 5.0.0-alpha5
-- latest -> 5.0.0-alpha5
+- 5.0.0-beta1
+- latest -> 5.0.0-beta1
 
 ## Host Prerequisites
 
@@ -51,7 +51,7 @@ export ELASTIC_REG=container-registry.elastic.co/elasticsearch
 ##### Run instance listening on localhost port 9200:
 
 ``` shell
-docker run -d -p 9200:9200 -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch:5.0.0-alpha5
+docker run -d -p 9200:9200 -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch
 ```
 
 This example uses a [Docker named volume](https://docs.docker.com/engine/tutorials/dockervolumes/) called `esdatavolume` which will be created if not present.
@@ -64,11 +64,11 @@ This example uses a [Docker named volume](https://docs.docker.com/engine/tutoria
 
 
 ``` shell
-docker run -d -p 9200:9200 -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0-alpha5 bin/elasticsearch -E discovery.zen.minimum_master_nodes=2
+docker run -d -p 9200:9200 -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch bin/elasticsearch -E discovery.zen.minimum_master_nodes=2
 ```
 
 ``` shell
-docker run -d -P -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0-alpha5 bin/elasticsearch -E discovery.zen.minimum_master_nodes=2 -E discovery.zen.ping.unicast.hosts=elasticsearch1
+docker run -d -P -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch bin/elasticsearch -E discovery.zen.minimum_master_nodes=2 -E discovery.zen.ping.unicast.hosts=elasticsearch1
 ```
 
 ### Security note
@@ -119,7 +119,7 @@ This can be done in two ways.
 
 - pass the parameters as docker env vars via the cli. Examples:
 
-  `docker run -d --memory=4g -v esdatavolume:/usr/share/elasticsearch/data -e ES_JAVA_OPTS="-Xms2g -Xms2g" $ELASTIC_REG/elasticsearch:5.0.0-alpha5`
+  `docker run -d --memory=4g -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch`
 
 ## Supported Docker versions
 
