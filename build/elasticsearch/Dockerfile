@@ -9,8 +9,8 @@ WORKDIR /usr/share/elasticsearch
 
 # Download/extract defined ES version. busybox tar can't strip leading dir.
 # Working with RC 5.0.0-beta1 candidates for now
-RUN wget http://staging.elastic.co/${ELASTICSEARCH_VERSION}-e9e2b09c/download/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz && \
-    EXPECTED_SHA=$(wget -O - http://staging.elastic.co/${ELASTICSEARCH_VERSION}-e9e2b09c/download/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz.sha1) && \
+RUN wget http://staging.elastic.co/${ELASTICSEARCH_VERSION}-eaab1488/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz && \
+    EXPECTED_SHA=$(wget -O - http://staging.elastic.co/${ELASTICSEARCH_VERSION}-eaab1488/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz.sha1) && \
     test $EXPECTED_SHA == $(sha1sum elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz | awk '{print $1}') && \
     tar zxf elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz && \
     chown -R elasticsearch:elasticsearch elasticsearch-${ELASTICSEARCH_VERSION} && \
@@ -31,7 +31,7 @@ USER elasticsearch
 # Install xpack
 #RUN elasticsearch-plugin install --batch x-pack
 # Working with RC 5.0.0-beta1 candidates for now
-RUN ES_JAVA_OPTS="-Des.plugins.staging=e9e2b09c" bin/elasticsearch-plugin install --batch x-pack
+RUN ES_JAVA_OPTS="-Des.plugins.staging=eaab1488" bin/elasticsearch-plugin install --batch x-pack
 
 COPY elasticsearch.yml /usr/share/elasticsearch/config/
 COPY log4j2.properties /usr/share/elasticsearch/config/
