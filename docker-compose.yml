@@ -34,8 +34,6 @@ services:
     cap_add:
       - IPC_LOCK
     command: bin/elasticsearch -E discovery.zen.ping.unicast.hosts=elasticsearch1 -E discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
-    environment:
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
     image: "elasticsearch:${ELASTICSEARCH_VERSION}"
     links:
       - elasticsearch1
