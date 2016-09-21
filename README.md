@@ -92,7 +92,9 @@ Elasticsearch logs go to the console.
 ### Notes for production use and defaults
 
 1. It is important to correctly set capabilities and ulimits via Docker cli. The following are required, also see [docker-compose.yml](https://github.com/elastic/elasticsearch-docker/blob/master/docker-compose.yml):
-   `--cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536`
+   `--cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536`.
+
+   Also ensure `bootstrap.memory_lock` is set to `true` as explained in the [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/setup-configuration-memory.html#mlockall). This can be achieved either by defining the parameter in a custom `elasticsearch.yml` or override the [CMD](https://docs.docker.com/engine/reference/run/#/cmd-default-command-or-options) and defining `-E boostrap.memory_lock=true` there.
 
 2. Define [discovery.zen.minimum_master_nodes](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery-zen.html) based on your requirements
 
