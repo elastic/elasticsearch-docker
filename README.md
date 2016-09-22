@@ -5,7 +5,7 @@ Elasticsearch is built with [x-pack](https://www.elastic.co/guide/en/x-pack/curr
 
 ## Image tags and hosting
 
-The image is hosted in Elastic's own docker registry: `container-registry.elastic.co/elasticsearch`
+The image is hosted in Elastic's own docker registry: `docker.elastic.co/elasticsearch`
 
 Available tags:
 
@@ -42,7 +42,7 @@ sudo sysctl -w vm.max_map_count=262144
 To save some keystrokes first set:
 
 ``` shell
-export ELASTIC_REG=container-registry.elastic.co/elasticsearch
+export ELASTIC_REG=docker.elastic.co/elasticsearch
 
 ```
 
