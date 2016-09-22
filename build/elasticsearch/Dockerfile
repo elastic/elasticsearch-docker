@@ -1,4 +1,4 @@
-FROM container-registry.elastic.co/elasticsearch/elasticsearch-alpine-base:latest
+FROM docker.elastic.co/elasticsearch/elasticsearch-alpine-base:latest
 MAINTAINER Elastic Docker Team <docker@elastic.co>
 
 ARG ELASTICSEARCH_VERSION

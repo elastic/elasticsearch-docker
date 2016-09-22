@@ -5,7 +5,7 @@ endif
 
 export ELASTICSEARCH_VERSION
 
-ELASTIC_REGISTRY=container-registry.elastic.co
+ELASTIC_REGISTRY=docker.elastic.co
 BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
 CONTAINERREGISTRY_ESIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(ELASTICSEARCH_VERSION)
 CONTAINERREGISTRY_ESIMAGE_LATESTTAG=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
@@ -47,7 +47,7 @@ cluster-unicast-test: pull-latest-baseimage clean-up-from-last-runs
 # Build docker image: "elasticsearch:$(ELASTICSEARCH_VERSION)"
 build-es: acceptance-test
 
-# Push $CONTAINERREGISTRY_ESIMAGE to container-registry.elastic.co/elasticsearch/ public repo
+# Push $CONTAINERREGISTRY_ESIMAGE to docker.elastic.co/elasticsearch/ public repo
 # Also tag elasticsearch:latest to this image (master branch always contains latest)
 # Use the `infraelasticsearch` docker account for push
 publish-elasticsearch-to-container-registry: build-es
