@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Run Elasticsearch and allow setting default settings via env vars
+#
+# e.g. Setting the env var -Ecluster.name=testcluster
+#
+# will cause Elasticsearch to be invoked with -Ecluster.name=testcluster
+#
+# see https://www.elastic.co/guide/en/elasticsearch/reference/5.0/settings.html#_setting_default_settings
+
+es_opts=''
+
+while IFS='='  read -r envvar_key envvar_value
+do
+    case $envvar_key in
+    [a-z.]*)
+        # es settings exported via env vars need to be lowercase
+
+        if [[ ! -z $envvar_key ]]; then
+          es_opt="-E${envvar_key}=${envvar_value}"
+          es_opts+=" ${es_opt}"
+        fi
+    esac
+done < <(env)
+
+exec bin/elasticsearch ${es_opts}

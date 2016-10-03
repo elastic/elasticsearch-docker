@@ -32,7 +32,12 @@ RUN elasticsearch-plugin install --batch x-pack
 
 COPY elasticsearch.yml /usr/share/elasticsearch/config/
 COPY log4j2.properties /usr/share/elasticsearch/config/
+COPY bin/es-docker /usr/share/elasticsearch/bin/es-docker
 
-CMD ["/bin/sh", "bin/elasticsearch"]
+USER root
+RUN chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml /usr/share/elasticsearch/config/log4j2.properties /usr/share/elasticsearch/bin/es-docker
+RUN chmod 0750 /usr/share/elasticsearch/bin/es-docker
+USER elasticsearch
+CMD ["/bin/bash", "bin/es-docker"]
 
 EXPOSE 9200 9300
