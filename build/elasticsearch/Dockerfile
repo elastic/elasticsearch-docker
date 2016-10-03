@@ -35,8 +35,9 @@ COPY log4j2.properties /usr/share/elasticsearch/config/
 COPY bin/es-docker /usr/share/elasticsearch/bin/es-docker
 
 USER root
-RUN chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml /usr/share/elasticsearch/config/log4j2.properties /usr/share/elasticsearch/bin/es-docker
-RUN chmod 0750 /usr/share/elasticsearch/bin/es-docker
+RUN chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml /usr/share/elasticsearch/config/log4j2.properties /usr/share/elasticsearch/bin/es-docker && \
+    chmod 0750 /usr/share/elasticsearch/bin/es-docker
+
 USER elasticsearch
 CMD ["/bin/bash", "bin/es-docker"]
 
