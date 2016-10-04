@@ -2,7 +2,7 @@
 
 # Run Elasticsearch and allow setting default settings via env vars
 #
-# e.g. Setting the env var -Ecluster.name=testcluster
+# e.g. Setting the env var cluster.name=testcluster
 #
 # will cause Elasticsearch to be invoked with -Ecluster.name=testcluster
 #
