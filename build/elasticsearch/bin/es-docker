@@ -10,17 +10,16 @@
 
 es_opts=''
 
-while IFS='='  read -r envvar_key envvar_value
+while IFS='=' read -r envvar_key envvar_value
 do
-    case $envvar_key in
-    [a-z.]*)
-        # es settings exported via env vars need to be lowercase
-
-        if [[ ! -z $envvar_key ]]; then
+    # Elasticsearch env vars need to have at least two dot separated lowercase words, e.g. `cluster.name`
+    if [[ "$envvar_key" =~ ^[a-z]+\.[a-z]+ ]]
+    then
+        if [[ ! -z $envvar_value ]]; then
           es_opt="-E${envvar_key}=${envvar_value}"
           es_opts+=" ${es_opt}"
         fi
-    esac
+    fi
 done < <(env)
 
 exec bin/elasticsearch ${es_opts}
