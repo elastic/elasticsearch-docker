@@ -1,7 +1,7 @@
 ## Description
 
 This is the official Elasticsearch image created by Elastic Inc.
-Elasticsearch is built with [x-pack](https://www.elastic.co/guide/en/x-pack/current/index.html)
+Elasticsearch is built with [x-pack](https://www.elastic.co/guide/en/x-pack/current/index.html).
 
 ## Image tags and hosting
 
@@ -64,11 +64,11 @@ This example uses a [Docker named volume](https://docs.docker.com/engine/tutoria
 
 
 ``` shell
-docker run -d -p 9200:9200 -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch bin/elasticsearch -E discovery.zen.minimum_master_nodes=2
+docker run -d -p 9200:9200 -e "discovery.zen.minimum_master_nodes=2" -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch
 ```
 
 ``` shell
-docker run -d -P -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch bin/elasticsearch -E discovery.zen.minimum_master_nodes=2 -E discovery.zen.ping.unicast.hosts=elasticsearch1
+docker run -d -P -e "discovery.zen.minimum_master_nodes=2" -e "discovery.zen.ping.unicast.hosts=elasticsearch1" -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch
 ```
 
 ### Security note
@@ -91,41 +91,41 @@ Elasticsearch logs go to the console.
 
 ### Notes for production use and defaults
 
-1. It is important to correctly set capabilities and ulimits via Docker cli. The following are required, also see [docker-compose.yml](https://github.com/elastic/elasticsearch-docker/blob/master/docker-compose.yml):
+1. Defining [elasticsearch parameters](https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration.html#settings) can be done with one of the following methods:
+
+  - Create your own `custom_elasticsearch.yml` and override the default shipped with the image using `-v custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml`
+  - Present the parameters via docker environment variables.
+    For example to define the cluster name with docker run you'd need to pass `-e "cluster.name=mynewclustername"`. Double quotes are required.
+
+    Note that there is a difference in defining [default settings](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/settings.html#_setting_default_settings) and normal settings. The former are prefixed with `default.` and can not override normal settings, if defined.
+  - Override the default [CMD](https://docs.docker.com/engine/reference/run/#cmd-default-command-or-options).
+    For example to define the cluster name you'd type: `docker run <various parameters> bin/elasticsearch -Ecluster.name=mynewclustername`
+
+2. It is important to correctly set capabilities and ulimits via Docker cli. The following are required, also see [docker-compose.yml](https://github.com/elastic/elasticsearch-docker/blob/master/docker-compose.yml):
    `--cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536`.
 
-   Also ensure `bootstrap.memory_lock` is set to `true` as explained in the [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/setup-configuration-memory.html#mlockall). This can be achieved either by defining the parameter in a custom `elasticsearch.yml` or override the [CMD](https://docs.docker.com/engine/reference/run/#/cmd-default-command-or-options) and defining `-E boostrap.memory_lock=true` there.
+   Also ensure `bootstrap.memory_lock` is set to `true` as explained in the [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/setup-configuration-memory.html#mlockall). This can be achieved as shown in 1. e.g. by setting the env var `-e "bootstrap.memory_lock=true"`.
 
-2. Define [discovery.zen.minimum_master_nodes](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery-zen.html) based on your requirements
+3. Define [discovery.zen.minimum_master_nodes](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery-zen.html) based on your requirements
 
-3. The image [exposes](https://docs.docker.com/engine/reference/builder/#/expose) ports 9200 and 9300. For clusters it is recommended to randomize the listening ports with `--publish-all`, unless you are pinning one container per host
+4. The image [exposes](https://docs.docker.com/engine/reference/builder/#/expose) ports 9200 and 9300. For clusters it is recommended to randomize the listening ports with `--publish-all`, unless you are pinning one container per host
 
-4. Use the env var `ES_JAVA_OPTS` to set heap size, e.g. to use 16GB use `-e ES_JAVA_OPTS="-Xms16g -Xmx=16g"` with `docker run`. It is also recommended to set a memory limit for the container.
+5. Use the env var `ES_JAVA_OPTS` to set heap size, e.g. to use 16GB use `-e ES_JAVA_OPTS="-Xms16g -Xmx=16g"` with `docker run`. It is also recommended to set a memory limit for the container.
 
-5. It is recommended to pin your deployments to a specific version of the Elasticsearch Docker image, especially if you are using an orchestration framework like Kubernetes, Amazon ECS or Docker Swarm.
+6. It is recommended to pin your deployments to a specific version of the Elasticsearch Docker image, especially if you are using an orchestration framework like Kubernetes, Amazon ECS or Docker Swarm.
 
-6. Always use a volume bound on `/usr/share/elasticsearch/data`, as shown in the examples, for the following reasons:
+7. Always use a volume bound on `/usr/share/elasticsearch/data`, as shown in the examples, for the following reasons:
 
   - The data of your elasticsearch node won't be lost if the container gets killed
   - Elasticsearch is IO sensitive and you should not be using the Docker Storage Driver
   - Allows the use of advanced [Docker volume plugins](https://docs.docker.com/engine/extend/plugins/#volume-plugins)
 
-7. Consider centralizing your logs by using a different [logging driver](https://docs.docker.com/engine/admin/logging/overview/). Also note that the default json-file logging driver is not ideally suited for production use.
+8. Consider centralizing your logs by using a different [logging driver](https://docs.docker.com/engine/admin/logging/overview/). Also note that the default json-file logging driver is not ideally suited for production use.
 
-
-#### Configuring [Elasticsearch settings](https://www.elastic.co/guide/en/elasticsearch/reference/2.1/setup-configuration.html#settings):
-
-This can be done in two ways.
-
-- create your own `custom_elasticsearch.yml` conf file and override the one shipped by the image using `-v custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml`
-
-- pass the parameters as docker env vars via the cli. Examples:
-
-  `docker run -d --memory=4g -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch`
 
 ## Supported Docker versions
 
-The images have been tested on Docker 1.12.
+The images have been tested on Docker 1.12.1.
 
 ## Contributing, issues and testing
 

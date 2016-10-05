@@ -22,17 +22,23 @@ RUN set -ex && for esdirs in config data logs; do \
         chown -R elasticsearch:elasticsearch "$esdirs"; \
     done
 
-COPY elasticsearch.yml /usr/share/elasticsearch/config/
-RUN chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml
+COPY elasticsearch.yml config/
+RUN chown elasticsearch:elasticsearch config/elasticsearch.yml
 
 USER elasticsearch
 
 # Install xpack
 RUN elasticsearch-plugin install --batch x-pack
 
-COPY elasticsearch.yml /usr/share/elasticsearch/config/
-COPY log4j2.properties /usr/share/elasticsearch/config/
+COPY elasticsearch.yml config/
+COPY log4j2.properties config/
+COPY bin/es-docker bin/es-docker
 
-CMD ["/bin/sh", "bin/elasticsearch"]
+USER root
+RUN chown elasticsearch:elasticsearch config/elasticsearch.yml config/log4j2.properties bin/es-docker && \
+    chmod 0750 bin/es-docker
+
+USER elasticsearch
+CMD ["/bin/bash", "bin/es-docker"]
 
 EXPOSE 9200 9300
