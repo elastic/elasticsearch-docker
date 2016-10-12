@@ -33,8 +33,8 @@ def query_all():
 def delete_index():
     response = requests.delete(
         "http://elasticsearch:9200/simpleindex/",
-        params={"refresh": "true"},
         auth=HTTPBasicAuth(admin_username, admin_newpwd)).json()
+    requests.post('http://elasticsearch:9200/_refresh/',)
     return response
 
 
