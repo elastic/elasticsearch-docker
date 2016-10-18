@@ -9,11 +9,13 @@ services:
       context: build/elasticsearch
       args:
         ELASTICSEARCH_VERSION: "${ELASTICSEARCH_VERSION}"
+        ES_DOWNLOAD_URL: "${ES_DOWNLOAD_URL}"
+        ES_JAVA_OPTS: "${ES_JAVA_OPTS}"
     cap_add:
       - IPC_LOCK
     environment:
       - discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
-    image: "elasticsearch:${ELASTICSEARCH_VERSION}"
+    image: "elasticsearch:${IMAGETAG}"
     mem_limit: 4g
     ports:
       - 9200:9200
@@ -32,12 +34,14 @@ services:
       context: build/elasticsearch
       args:
         ELASTICSEARCH_VERSION: "${ELASTICSEARCH_VERSION}"
+        ES_DOWNLOAD_URL: "${ES_DOWNLOAD_URL}"
+        ES_JAVA_OPTS: "${ES_JAVA_OPTS}"
     cap_add:
       - IPC_LOCK
     environment:
       - discovery.zen.ping.unicast.hosts=elasticsearch1
       - discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
-    image: "elasticsearch:${ELASTICSEARCH_VERSION}"
+    image: "elasticsearch:${IMAGETAG}"
     links:
       - elasticsearch1
     mem_limit: 4g

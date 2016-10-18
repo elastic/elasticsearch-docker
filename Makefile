@@ -3,11 +3,23 @@ ifndef ELASTICSEARCH_VERSION
 ELASTICSEARCH_VERSION=5.0.0-rc1
 endif
 
+ifdef STAGING_BUILD_NUM
+IMAGETAG=$(ELASTICSEARCH_VERSION)-${STAGING_BUILD_NUM}
+ES_DOWNLOAD_URL=http://staging.elastic.co/$(IMAGETAG)/downloads/elasticsearch
+ES_JAVA_OPTS:=ES_JAVA_OPTS="-Des.plugins.staging=${STAGING_BUILD_NUM}"
+else
+IMAGETAG=$(ELASTICSEARCH_VERSION)
+ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch
+endif
+
 export ELASTICSEARCH_VERSION
+export ES_DOWNLOAD_URL
+export ES_JAVA_OPTS
+export IMAGETAG
 
 ELASTIC_REGISTRY=docker.elastic.co
 BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
-ELASTICREGISTRY_ESIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(ELASTICSEARCH_VERSION)
+ELASTICREGISTRY_ESIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(IMAGETAG)
 ELASTICREGISTRY_ESIMAGE_LATESTTAG=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
 
 .PHONY: acceptance-test build-es clean-up-from-last-runs cluster-unicast-test publish-elasticsearch-to-elastic-registry pull-latest-baseimage run-es-cluster run-es-single single-node-test
@@ -44,13 +56,17 @@ cluster-unicast-test: pull-latest-baseimage clean-up-from-last-runs
 	docker-compose run tester
 	docker-compose down -v
 
-# Build docker image: "elasticsearch:$(ELASTICSEARCH_VERSION)"
+# Build docker image: "elasticsearch:$(IMAGETAG)"
 build-es: acceptance-test
 
 # Push $ELASTICREGISTRY_ESIMAGE to docker.elastic.co/elasticsearch/ public repo
 # Also tag elasticsearch:latest to this image (master branch always contains latest)
 publish-elasticsearch-to-elastic-registry: build-es
-	docker tag elasticsearch:$(ELASTICSEARCH_VERSION) $(ELASTICREGISTRY_ESIMAGE)
-	docker tag elasticsearch:$(ELASTICSEARCH_VERSION) $(ELASTICREGISTRY_ESIMAGE_LATESTTAG)
+	docker tag elasticsearch:$(IMAGETAG) $(ELASTICREGISTRY_ESIMAGE)
 	docker push $(ELASTICREGISTRY_ESIMAGE)
-	docker push $(ELASTICREGISTRY_ESIMAGE_LATESTTAG)
+
+	# Only push latest if not a staging build
+	if [ -z $$STAGING_BUILD_NUM ]; then \
+		docker tag elasticsearch:$(IMAGETAG) $(ELASTICREGISTRY_ESIMAGE_LATESTTAG); \
+		docker push $(ELASTICREGISTRY_ESIMAGE_LATESTTAG); \
+	fi
