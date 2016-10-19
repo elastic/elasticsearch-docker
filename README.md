@@ -52,7 +52,7 @@ export ELASTIC_REG=docker.elastic.co/elasticsearch
 ##### Run instance listening on localhost port 9200:
 
 ``` shell
-docker run -d -p 9200:9200 -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch
+docker run -d -p 9200:9200 -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch:5.0.0-rc1
 ```
 
 This example uses a [Docker named volume](https://docs.docker.com/engine/tutorials/dockervolumes/) called `esdatavolume` which will be created if not present.
@@ -65,11 +65,11 @@ This example uses a [Docker named volume](https://docs.docker.com/engine/tutoria
 
 
 ``` shell
-docker run -d -p 9200:9200 -e "discovery.zen.minimum_master_nodes=2" -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch
+docker run -d -p 9200:9200 -e "discovery.zen.minimum_master_nodes=2" -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0-rc1
 ```
 
 ``` shell
-docker run -d -P -e "discovery.zen.minimum_master_nodes=2" -e "discovery.zen.ping.unicast.hosts=elasticsearch1" -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch
+docker run -d -P -e "discovery.zen.minimum_master_nodes=2" -e "discovery.zen.ping.unicast.hosts=elasticsearch1" -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0-rc1
 ```
 
 ### Security note
