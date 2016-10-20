@@ -107,7 +107,7 @@ Elasticsearch logs go to the console.
 
    Also ensure `bootstrap.memory_lock` is set to `true` as explained in the [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/setup-configuration-memory.html#mlockall). This can be achieved as shown in 1. e.g. by setting the env var `-e "bootstrap.memory_lock=true"`.
 
-3. Define [discovery.zen.minimum_master_nodes](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery-zen.html) based on your requirements
+3. Define [discovery.zen.minimum_master_nodes](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery-zen.html) based on your requirements.
 
 4. The image [exposes](https://docs.docker.com/engine/reference/builder/#/expose) ports 9200 and 9300. For clusters it is recommended to randomize the listening ports with `--publish-all`, unless you are pinning one container per host
 
@@ -121,7 +121,9 @@ Elasticsearch logs go to the console.
   - Elasticsearch is IO sensitive and you should not be using the Docker Storage Driver
   - Allows the use of advanced [Docker volume plugins](https://docs.docker.com/engine/extend/plugins/#volume-plugins)
 
-8. Consider centralizing your logs by using a different [logging driver](https://docs.docker.com/engine/admin/logging/overview/). Also note that the default json-file logging driver is not ideally suited for production use.
+8. On **RedHat (rpm) based** distributions, [configure docker-engine](https://docs.docker.com/engine/userguide/storagedriver/device-mapper-driver/#configure-docker-with-devicemapper) to use a different storage driver than the default loopback-based one which is unsuitable for production use.
+
+9. Consider centralizing your logs by using a different [logging driver](https://docs.docker.com/engine/admin/logging/overview/). Also note that the default json-file logging driver is not ideally suited for production use.
 
 
 ## Supported Docker versions
