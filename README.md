@@ -121,7 +121,7 @@ Elasticsearch logs go to the console.
   - Elasticsearch is IO sensitive and you should not be using the Docker Storage Driver
   - Allows the use of advanced [Docker volume plugins](https://docs.docker.com/engine/extend/plugins/#volume-plugins)
 
-8. On **RedHat (rpm) based** distributions, [configure docker-engine](https://docs.docker.com/engine/userguide/storagedriver/device-mapper-driver/#configure-docker-with-devicemapper) to use a different storage driver than the default loopback-based one which is unsuitable for production use.
+8. If you are using the devicemapper storage driver (default at least on RedHat (rpm) based distributions) make sure you are not using the default `loop-lvm` mode but [configure docker-engine](https://docs.docker.com/engine/userguide/storagedriver/device-mapper-driver/#configure-docker-with-devicemapper) to use direct-lvm instead.
 
 9. Consider centralizing your logs by using a different [logging driver](https://docs.docker.com/engine/admin/logging/overview/). Also note that the default json-file logging driver is not ideally suited for production use.
 
