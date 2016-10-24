@@ -8,7 +8,7 @@ services:
     build:
       context: build/elasticsearch
       args:
-        ELASTICSEARCH_VERSION: "${ELASTICSEARCH_VERSION}"
+        ELASTIC_VERSION: "${ELASTIC_VERSION}"
         ES_DOWNLOAD_URL: "${ES_DOWNLOAD_URL}"
         ES_JAVA_OPTS: "${ES_JAVA_OPTS}"
     cap_add:
@@ -33,7 +33,7 @@ services:
     build:
       context: build/elasticsearch
       args:
-        ELASTICSEARCH_VERSION: "${ELASTICSEARCH_VERSION}"
+        ELASTIC_VERSION: "${ELASTIC_VERSION}"
         ES_DOWNLOAD_URL: "${ES_DOWNLOAD_URL}"
         ES_JAVA_OPTS: "${ES_JAVA_OPTS}"
     cap_add:

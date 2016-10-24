@@ -1,7 +1,7 @@
 FROM docker.elastic.co/elasticsearch/elasticsearch-alpine-base:latest
 MAINTAINER Elastic Docker Team <docker@elastic.co>
 
-ARG ELASTICSEARCH_VERSION
+ARG ELASTIC_VERSION
 ARG ES_DOWNLOAD_URL
 ARG ES_JAVA_OPTS
 
@@ -11,14 +11,14 @@ ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
 WORKDIR /usr/share/elasticsearch
 
 # Download/extract defined ES version. busybox tar can't strip leading dir.
-RUN wget ${ES_DOWNLOAD_URL}/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz && \
-    EXPECTED_SHA=$(wget -O - ${ES_DOWNLOAD_URL}/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz.sha1) && \
-    test $EXPECTED_SHA == $(sha1sum elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz | awk '{print $1}') && \
-    tar zxf elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz && \
-    chown -R elasticsearch:elasticsearch elasticsearch-${ELASTICSEARCH_VERSION} && \
-    mv elasticsearch-${ELASTICSEARCH_VERSION}/* . && \
-    rmdir elasticsearch-${ELASTICSEARCH_VERSION} && \
-    rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+RUN wget ${ES_DOWNLOAD_URL}/elasticsearch-${ELASTIC_VERSION}.tar.gz && \
+    EXPECTED_SHA=$(wget -O - ${ES_DOWNLOAD_URL}/elasticsearch-${ELASTIC_VERSION}.tar.gz.sha1) && \
+    test $EXPECTED_SHA == $(sha1sum elasticsearch-${ELASTIC_VERSION}.tar.gz | awk '{print $1}') && \
+    tar zxf elasticsearch-${ELASTIC_VERSION}.tar.gz && \
+    chown -R elasticsearch:elasticsearch elasticsearch-${ELASTIC_VERSION} && \
+    mv elasticsearch-${ELASTIC_VERSION}/* . && \
+    rmdir elasticsearch-${ELASTIC_VERSION} && \
+    rm elasticsearch-${ELASTIC_VERSION}.tar.gz
 
 RUN set -ex && for esdirs in config data logs; do \
         mkdir -p "$esdirs"; \
