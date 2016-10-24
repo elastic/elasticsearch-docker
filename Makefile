@@ -1,18 +1,18 @@
 SHELL=/bin/bash
-ifndef ELASTICSEARCH_VERSION
-ELASTICSEARCH_VERSION=5.0.0-rc1
+ifndef ELASTIC_VERSION
+ELASTIC_VERSION=5.0.0-rc1
 endif
 
 ifdef STAGING_BUILD_NUM
-IMAGETAG=$(ELASTICSEARCH_VERSION)-${STAGING_BUILD_NUM}
+IMAGETAG=$(ELASTIC_VERSION)-${STAGING_BUILD_NUM}
 ES_DOWNLOAD_URL=http://staging.elastic.co/$(IMAGETAG)/downloads/elasticsearch
 ES_JAVA_OPTS:=ES_JAVA_OPTS="-Des.plugins.staging=${STAGING_BUILD_NUM}"
 else
-IMAGETAG=$(ELASTICSEARCH_VERSION)
+IMAGETAG=$(ELASTIC_VERSION)
 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch
 endif
 
-export ELASTICSEARCH_VERSION
+export ELASTIC_VERSION
 export ES_DOWNLOAD_URL
 export ES_JAVA_OPTS
 export IMAGETAG
@@ -22,14 +22,17 @@ BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
 ELASTICREGISTRY_ESIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(IMAGETAG)
 ELASTICREGISTRY_ESIMAGE_LATESTTAG=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
 
-.PHONY: acceptance-test build clean-up-from-last-runs cluster-unicast-test push pull-latest-baseimage run-es-cluster run-es-single single-node-test
+.PHONY: build clean cluster-unicast-test pull-latest-baseimage push run-es-cluster run-es-single single-node-test test
+
+# Default target, build *and* run tests
+test: single-node-test cluster-unicast-test
 
 # Common target to ensure BASEIMAGE is latest
 pull-latest-baseimage:
 	docker pull $(BASEIMAGE)
 
 # Clean up left over containers and volumes from earlier failed runs
-clean-up-from-last-runs:
+clean:
 	docker-compose down -v && docker-compose rm -f -v
 	rm -rf tests/__pycache__
 	rm -f tests/*.pyc
@@ -40,28 +43,27 @@ run-es-single: pull-latest-baseimage
 run-es-cluster: pull-latest-baseimage
 	ES_NODE_COUNT=2 docker-compose up --build elasticsearch1 elasticsearch2
 
-acceptance-test: single-node-test cluster-unicast-test
-
 single-node-test: export ES_NODE_COUNT=1
-single-node-test: pull-latest-baseimage clean-up-from-last-runs
+single-node-test: pull-latest-baseimage clean
 	docker-compose up -d --build elasticsearch1
 	docker-compose build tester
 	docker-compose run tester
 	docker-compose down -v
 
 cluster-unicast-test: export ES_NODE_COUNT=2
-cluster-unicast-test: pull-latest-baseimage clean-up-from-last-runs
+cluster-unicast-test: pull-latest-baseimage clean
 	docker-compose up -d --build elasticsearch1 elasticsearch2
 	docker-compose build tester
 	docker-compose run tester
 	docker-compose down -v
 
 # Build docker image: "elasticsearch:$(IMAGETAG)"
-build: acceptance-test
+build: pull-latest-baseimage clean
+	docker-compose build --pull elasticsearch1
 
 # Push $ELASTICREGISTRY_ESIMAGE to docker.elastic.co/elasticsearch/ public repo
 # Also tag elasticsearch:latest to this image (master branch always contains latest)
-push: build
+push: test
 	docker tag elasticsearch:$(IMAGETAG) $(ELASTICREGISTRY_ESIMAGE)
 	docker push $(ELASTICREGISTRY_ESIMAGE)
 
