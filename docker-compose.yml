@@ -17,9 +17,6 @@ services:
       - discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
     image: "elasticsearch:${IMAGETAG}"
     mem_limit: 4g
-    ports:
-      - 9200:9200
-      - 9300
     ulimits:
       memlock:
         soft: -1
@@ -45,9 +42,6 @@ services:
     links:
       - elasticsearch1
     mem_limit: 4g
-    ports:
-      - 9200
-      - 9300
     ulimits:
       memlock:
         soft: -1
