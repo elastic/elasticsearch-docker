@@ -15,7 +15,7 @@ Available tags:
 
 ## Host Prerequisites
 
-### Linux and [Docker for Mac](https://docs.docker.com/engine/installation/mac/#/docker-for-mac)
+### Linux
 
 `vm.max_map_count` sysctl must be set to at least `262144`
 
@@ -28,6 +28,20 @@ vm.max_map_count=262144
 
 And apply the setting using: `sysctl -w vm.max_map_count=262144`
 
+### OSX with [Docker for Mac](https://docs.docker.com/engine/installation/mac/#/docker-for-mac)
+
+The `vm_max_map_count` setting must be set within the xhyve virtual machine:
+
+```shell
+$ screen ~/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/tty
+```
+
+Log in with 'root' and no password.
+Then configure the `sysctl` setting as you would for Linux:
+
+```shell
+sysctl -w vm.max_map_count=262144
+```
 
 ### OSX with [Docker Toolbox](https://docs.docker.com/engine/installation/mac/#docker-toolbox)
 
