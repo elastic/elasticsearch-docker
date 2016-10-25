@@ -12,15 +12,15 @@ IMAGETAG=$(ELASTIC_VERSION)
 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch
 endif
 
+ELASTIC_REGISTRY=docker.elastic.co
+BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
+VERSIONED_IMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(IMAGETAG)
+LATEST_IMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
+
 export ELASTIC_VERSION
 export ES_DOWNLOAD_URL
 export ES_JAVA_OPTS
-export IMAGETAG
-
-ELASTIC_REGISTRY=docker.elastic.co
-BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
-ELASTICREGISTRY_ESIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(IMAGETAG)
-ELASTICREGISTRY_ESIMAGE_LATESTTAG=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
+export VERSIONED_IMAGE
 
 .PHONY: build clean cluster-unicast-test pull-latest-baseimage push run-es-cluster run-es-single single-node-test test
 
@@ -34,8 +34,6 @@ pull-latest-baseimage:
 # Clean up left over containers and volumes from earlier failed runs
 clean:
 	docker-compose down -v && docker-compose rm -f -v
-	rm -rf tests/__pycache__
-	rm -f tests/*.pyc
 
 run-es-single: pull-latest-baseimage
 	ES_NODE_COUNT=1 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml up --build elasticsearch1
@@ -61,14 +59,10 @@ cluster-unicast-test: pull-latest-baseimage clean
 build: pull-latest-baseimage clean
 	docker-compose build --pull elasticsearch1
 
-# Push $ELASTICREGISTRY_ESIMAGE to docker.elastic.co/elasticsearch/ public repo
-# Also tag elasticsearch:latest to this image (master branch always contains latest)
+# Push to registry. Only push latest if not a staging build.
 push: test
-	docker tag elasticsearch:$(IMAGETAG) $(ELASTICREGISTRY_ESIMAGE)
-	docker push $(ELASTICREGISTRY_ESIMAGE)
+	docker push $(VERSIONED_IMAGE)
 
-	# Only push latest if not a staging build
 	if [ -z $$STAGING_BUILD_NUM ]; then \
-		docker tag elasticsearch:$(IMAGETAG) $(ELASTICREGISTRY_ESIMAGE_LATESTTAG); \
-		docker push $(ELASTICREGISTRY_ESIMAGE_LATESTTAG); \
+		docker push $(LATEST_IMAGE); \
 	fi
