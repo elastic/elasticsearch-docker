@@ -38,10 +38,10 @@ clean:
 	rm -f tests/*.pyc
 
 run-es-single: pull-latest-baseimage
-	ES_NODE_COUNT=1 docker-compose up --build elasticsearch1
+	ES_NODE_COUNT=1 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml up --build elasticsearch1
 
 run-es-cluster: pull-latest-baseimage
-	ES_NODE_COUNT=2 docker-compose up --build elasticsearch1 elasticsearch2
+	ES_NODE_COUNT=2 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml up --build elasticsearch1 elasticsearch2
 
 single-node-test: export ES_NODE_COUNT=1
 single-node-test: pull-latest-baseimage clean
