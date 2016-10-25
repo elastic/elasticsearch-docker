@@ -4,7 +4,7 @@ services:
   # Can't use service elasticsearch=<num> for now due to named volumes
   elasticsearch1:
   # Equivalent to:
-  # docker run --rm --cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536 -t -P --memory="4g" -e "discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}" -v esdata:/usr/share/elasticsearch/data elasticsearch:5.0.0-rc1
+  # docker run --rm --cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536 -t -P --memory="4g" -e "discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}" -v esdata:/usr/share/elasticsearch/data docker.elastic.co/elasticsearch/elasticsearch:5.0.0-rc1
     build:
       context: build/elasticsearch
       args:
@@ -15,7 +15,7 @@ services:
       - IPC_LOCK
     environment:
       - discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
-    image: "elasticsearch:${IMAGETAG}"
+    image: "${VERSIONED_IMAGE}"
     mem_limit: 4g
     ulimits:
       memlock:
@@ -38,7 +38,7 @@ services:
     environment:
       - discovery.zen.ping.unicast.hosts=elasticsearch1
       - discovery.zen.minimum_master_nodes=${ES_NODE_COUNT}
-    image: "elasticsearch:${IMAGETAG}"
+    image: "${VERSIONED_IMAGE}"
     links:
       - elasticsearch1
     mem_limit: 4g
@@ -54,12 +54,12 @@ services:
   tester:
     build:
       context: build/python
-    command: py.test tests/test_xpack_basic_index_crud.py
+    command: py.test -p no:cacheprovider tests/test_xpack_basic_index_crud.py
     image: "tester:latest"
     links:
       - elasticsearch1:elasticsearch
     volumes:
-      - $PWD/tests:/home/testuser/tests
+      - $PWD/tests:/home/testuser/tests:ro
 volumes:
   esdata1:
     driver: local
