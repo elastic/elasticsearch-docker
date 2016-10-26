@@ -124,18 +124,22 @@ You could then build and try the image with something like:
 
 ``` shell
 docker build --tag=elasticsearch-custom .
-docker run -ti -v /usr/share/elasticsearch/data -it elasticsearch-custom
+docker run -ti -v /usr/share/elasticsearch/data elasticsearch-custom
 ```
 
-### Present the parameters via docker environment variables.
+### Present the parameters via docker environment variables
 
 For example to define the cluster name with docker run you'd need to pass `-e "cluster.name=mynewclustername"`. Double quotes are required.
 
 *Note:* that there is a difference in defining [default settings](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/settings.html#_setting_default_settings) and normal settings. The former are prefixed with `default.` and can not override normal settings, if defined.
 
-### Override the image's default [CMD](https://docs.docker.com/engine/reference/run/#cmd-default-command-or-options).
+### Override the image's default [CMD](https://docs.docker.com/engine/reference/run/#cmd-default-command-or-options)
 
-For example to define the cluster name you'd type: `docker run <various parameters> bin/elasticsearch -Ecluster.name=mynewclustername`
+For example to define the cluster name you'd type:
+
+```
+docker run <various parameters> bin/elasticsearch -Ecluster.name=mynewclustername
+```
 
 ## Logging
 
