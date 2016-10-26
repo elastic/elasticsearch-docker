@@ -9,9 +9,8 @@ The image is hosted in Elastic's own docker registry: `docker.elastic.co/elastic
 
 Available tags:
 
-- 5.0.0-beta1
-- 5.0.0-rc1
-- latest -> 5.0.0-rc1
+- 5.0.0
+- latest -> 5.0.0
 
 ## Host Prerequisites
 
@@ -66,7 +65,7 @@ export ELASTIC_REG=docker.elastic.co/elasticsearch
 ##### Run instance listening on localhost port 9200:
 
 ``` shell
-docker run -d -p 9200:9200 -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch:5.0.0-rc1
+docker run -d -p 9200:9200 -v esdatavolume:/usr/share/elasticsearch/data $ELASTIC_REG/elasticsearch:5.0.0
 ```
 
 This example uses a [Docker named volume](https://docs.docker.com/engine/tutorials/dockervolumes/) called `esdatavolume` which will be created if not present.
@@ -79,11 +78,11 @@ This example uses a [Docker named volume](https://docs.docker.com/engine/tutoria
 
 
 ``` shell
-docker run -d -p 9200:9200 -e "discovery.zen.minimum_master_nodes=2" -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0-rc1
+docker run -d -p 9200:9200 -e "discovery.zen.minimum_master_nodes=2" -v esdatavolume1:/usr/share/elasticsearch/data --name elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0
 ```
 
 ``` shell
-docker run -d -P -e "discovery.zen.minimum_master_nodes=2" -e "discovery.zen.ping.unicast.hosts=elasticsearch1" -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0-rc1
+docker run -d -P -e "discovery.zen.minimum_master_nodes=2" -e "discovery.zen.ping.unicast.hosts=elasticsearch1" -v esdatavolume2:/usr/share/elasticsearch/data --name elasticsearch2 --link elasticsearch1 $ELASTIC_REG/elasticsearch:5.0.0
 ```
 
 ### Security note
@@ -116,7 +115,7 @@ Create your own `custom_elasticsearch.yml` and override the default shipped with
 In some environments, it may make more sense to prepare a custom image containing your configuration. A `Dockerfile` to achieve this may be as simple as:
 
 ``` dockerfile
-FROM docker.elastic.co/elasticsearch/elasticsearch:5.0.0-rc1
+FROM docker.elastic.co/elasticsearch/elasticsearch:5.0.0
 ADD elasticsearch.yml /usr/share/elasticsearch/config/
 ```
 
