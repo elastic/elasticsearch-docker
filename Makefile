@@ -64,5 +64,6 @@ push: test
 	docker push $(VERSIONED_IMAGE)
 
 	if [ -z $$STAGING_BUILD_NUM ]; then \
+		docker tag $(VERSIONED_IMAGE) $(LATEST_IMAGE); \
 		docker push $(LATEST_IMAGE); \
 	fi
