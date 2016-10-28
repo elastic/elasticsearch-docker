@@ -88,7 +88,7 @@ docker run -d -P -e "discovery.zen.minimum_master_nodes=2" -e "discovery.zen.pin
 ### Security note
 
 Note that [X-Pack](https://www.elastic.co/guide/en/x-pack/current/index.html) is preinstalled in this image.
-Please take a few minutes to familiarize yourself with the [X-Pack security](https://www.elastic.co/guide/en/x-pack/current/security-getting-started.html) and how to change default passwords. The default password for the `elastic` user is `changeme`.
+Please take a few minutes to familiarize yourself with [X-Pack Security](https://www.elastic.co/guide/en/x-pack/current/security-getting-started.html) and how to change default passwords. The default password for the `elastic` user is `changeme`.
 
 ###### Inspect status of cluster:
 
@@ -126,9 +126,9 @@ docker build --tag=elasticsearch-custom .
 docker run -ti -v /usr/share/elasticsearch/data elasticsearch-custom
 ```
 
-### Present the parameters via docker environment variables
+### Present the parameters via Docker environment variables
 
-For example to define the cluster name with docker run you'd need to pass `-e "cluster.name=mynewclustername"`. Double quotes are required.
+For example to define the cluster name with `docker run` you'd need to pass `-e "cluster.name=mynewclustername"`. Double quotes are required.
 
 *Note:* that there is a difference in defining [default settings](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/settings.html#_setting_default_settings) and normal settings. The former are prefixed with `default.` and can not override normal settings, if defined.
 
