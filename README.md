@@ -115,7 +115,7 @@ Create your own `custom_elasticsearch.yml` and override the default shipped with
 In some environments, it may make more sense to prepare a custom image containing your configuration. A `Dockerfile` to achieve this may be as simple as:
 
 ``` dockerfile
-FROM docker.elastic.co/elasticsearch/elasticsearch:5.0.0-rc1
+FROM docker.elastic.co/elasticsearch/elasticsearch
 ADD elasticsearch.yml /usr/share/elasticsearch/config/
 ```
 
