@@ -9,9 +9,8 @@ The image is hosted in Elastic's own docker registry: `docker.elastic.co/elastic
 
 Available tags:
 
-- 5.0.0-beta1
-- 5.0.0-rc1
-- latest -> 5.0.0-rc1
+- 5.0.0
+- latest -> 5.0.0
 
 ## Host Prerequisites
 
