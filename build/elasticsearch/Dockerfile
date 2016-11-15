@@ -25,9 +25,6 @@ RUN set -ex && for esdirs in config data logs; do \
         chown -R elasticsearch:elasticsearch "$esdirs"; \
     done
 
-COPY elasticsearch.yml config/
-RUN chown elasticsearch:elasticsearch config/elasticsearch.yml
-
 USER elasticsearch
 
 # Install xpack
