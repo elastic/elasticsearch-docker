@@ -62,8 +62,3 @@ build: pull-latest-baseimage clean
 # Push to registry. Only push latest if not a staging build.
 push: test
 	docker push $(VERSIONED_IMAGE)
-
-	if [ -z $$STAGING_BUILD_NUM ]; then \
-		docker tag $(VERSIONED_IMAGE) $(LATEST_IMAGE); \
-		docker push $(LATEST_IMAGE); \
-	fi
