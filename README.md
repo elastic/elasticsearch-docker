@@ -2,7 +2,7 @@
 
 This is the official Elasticsearch image created by Elastic Inc.
 
-Documentation can be found on the [Elastic web site](https://www.elastic.co/guide/en/elasticsearch/reference/master/docker.html).
+Documentation can be found on the [Elastic web site](https://www.elastic.co/guide/en/elasticsearch/reference/5.1/docker.html).
 
 ## Supported Docker versions
 
