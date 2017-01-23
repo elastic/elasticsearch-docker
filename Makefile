@@ -44,14 +44,14 @@ run-es-cluster: pull-latest-baseimage
 single-node-test: export ES_NODE_COUNT=1
 single-node-test: pull-latest-baseimage clean
 	docker-compose up -d --build elasticsearch1
-	docker-compose build tester
+	docker-compose build --pull tester
 	docker-compose run tester
 	docker-compose down -v
 
 cluster-unicast-test: export ES_NODE_COUNT=2
 cluster-unicast-test: pull-latest-baseimage clean
 	docker-compose up -d --build elasticsearch1 elasticsearch2
-	docker-compose build tester
+	docker-compose build --pull tester
 	docker-compose run tester
 	docker-compose down -v
 
