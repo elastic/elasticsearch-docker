@@ -1,8 +1,7 @@
 from __future__ import print_function
 from es_acceptance import docker_stack, docker_xpack_stack_uninitialized
-from es_acceptance import cluster_health, query_all, delete_index, create_index, wait_for_cluster_health, change_default_elastic_password
+from es_acceptance import cluster_health, query_all, delete_index, create_index, wait_for_cluster_health, change_default_elastic_password, os_stats
 from pytest import fixture
-
 
 # change default x-pack password; cluster state should be yellow after that
 def test_password_change(docker_xpack_stack_uninitialized):
@@ -38,3 +37,12 @@ def test_cluster_health_after_crud(docker_stack):
         wait_for_cluster_health('green')
 
     delete_index()
+
+
+def test_cgroup_os_stats(docker_stack):
+    nodes_os_stats = os_stats()
+    # Elasticsearch should be capable of returning cgroup stats for all nodes
+    for nodenane, node_os_stats in nodes_os_stats["nodes"].iteritems():
+        assert 'cgroup' in node_os_stats['os']
+        assert 'cpu' in node_os_stats['os']['cgroup']
+        assert 'cpuacct' in node_os_stats['os']['cgroup']

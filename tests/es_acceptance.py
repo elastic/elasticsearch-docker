@@ -22,7 +22,6 @@ def cluster_health():
         auth=HTTPBasicAuth(admin_username, admin_newpwd)).json()
     return response
 
-
 def query_all():
     response = requests.get(
         "http://elasticsearch:9200/simpleindex/_search",
@@ -50,6 +49,13 @@ def create_index():
             data=open('tests/testdata.json').read(),
             params={"refresh": "true"},
             auth=HTTPBasicAuth(admin_username, admin_newpwd))
+
+
+def os_stats():
+    response = requests.get(
+        "http://elasticsearch:9200/_nodes/stats/os",
+        auth=HTTPBasicAuth(admin_username, admin_newpwd)).json()
+    return response
 
 
 @retry(stop_max_attempt_number=8, wait_exponential_multiplier=100, wait_exponential_max=60000)
