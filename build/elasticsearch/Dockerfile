@@ -1,4 +1,4 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch-alpine-base:latest
+FROM centos:latest
 MAINTAINER Elastic Docker Team <docker@elastic.co>
 
 ARG ELASTIC_VERSION
@@ -7,6 +7,10 @@ ARG ES_JAVA_OPTS
 
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
+
+RUN yum install -y java-1.8.0-openjdk wget which && yum clean all
+
+RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elasticsearch elasticsearch
 
 WORKDIR /usr/share/elasticsearch
 
