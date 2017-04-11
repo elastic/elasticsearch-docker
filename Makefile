@@ -21,39 +21,31 @@ export ES_DOWNLOAD_URL
 export ES_JAVA_OPTS
 export VERSIONED_IMAGE
 
-.PHONY: build clean cluster-unicast-test pull-latest-baseimage push run-es-cluster run-es-single single-node-test test
+.PHONY: test clean run run-single run-cluster build push
 
 # Default target, build *and* run tests
-test: single-node-test cluster-unicast-test
+test: build
+	docker-compose up -d elasticsearch1 elasticsearch2
+	docker-compose run tester
+	docker-compose down -v
 
 # Clean up left over containers and volumes from earlier failed runs
 clean:
 	docker-compose down -v && docker-compose rm -f -v
 
-run-es-single:
-	ES_NODE_COUNT=1 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml up --build elasticsearch1
+run: run-single
 
-run-es-cluster:
-	ES_NODE_COUNT=2 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml up --build elasticsearch1 elasticsearch2
+run-single: build
+	ES_NODE_COUNT=1 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
+          up elasticsearch1
 
-single-node-test: export ES_NODE_COUNT=1
-single-node-test: clean
-	docker-compose up -d --build elasticsearch1
-	docker-compose build --pull tester
-	docker-compose run tester
-	docker-compose down -v
-
-cluster-unicast-test: export ES_NODE_COUNT=2
-cluster-unicast-test: clean
-	docker-compose up -d --build elasticsearch1 elasticsearch2
-	docker-compose build --pull tester
-	docker-compose run tester
-	docker-compose down -v
+run-cluster: build
+	ES_NODE_COUNT=2 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
+          up elasticsearch1 elasticsearch2
 
 # Build docker image: "elasticsearch:$(IMAGETAG)"
 build: clean
-	docker-compose build --pull elasticsearch1
+	docker-compose build --pull
 
-# Push to registry. Only push latest if not a staging build.
 push: test
 	docker push $(VERSIONED_IMAGE)
