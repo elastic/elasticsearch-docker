@@ -1,4 +1,6 @@
 SHELL=/bin/bash
+export PATH := ./bin:./venv/bin:$(PATH)
+
 ifndef ELASTIC_VERSION
 ELASTIC_VERSION=5.3.0
 endif
@@ -24,10 +26,8 @@ export VERSIONED_IMAGE
 .PHONY: test clean run run-single run-cluster build push
 
 # Default target, build *and* run tests
-test: build
-	docker-compose up -d elasticsearch1 elasticsearch2
-	docker-compose run tester
-	docker-compose down -v
+test: build venv
+	./bin/testinfra --verbose tests
 
 # Clean up left over containers and volumes from earlier failed runs
 clean:
@@ -49,3 +49,9 @@ build: clean
 
 push: test
 	docker push $(VERSIONED_IMAGE)
+
+# The tests are written in Python. Make a virtualenv to handle the dependencies.
+venv: requirements.txt
+	test -d venv || virtualenv --python=python3.5 venv
+	pip install -r requirements.txt
+	touch venv

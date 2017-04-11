@@ -18,27 +18,27 @@ admin_newpwd = 'testpassword'
 
 def cluster_health():
     response = requests.get(
-        "http://elasticsearch:9200/_cluster/health",
+        "http://localhost:9200/_cluster/health",
         auth=HTTPBasicAuth(admin_username, admin_newpwd)).json()
     return response
 
 def query_all():
     response = requests.get(
-        "http://elasticsearch:9200/simpleindex/_search",
+        "http://localhost:9200/simpleindex/_search",
         auth=HTTPBasicAuth(admin_username, admin_newpwd)).json()
     return response
 
 
 def delete_index():
     response = requests.delete(
-        "http://elasticsearch:9200/simpleindex/",
+        "http://localhost:9200/simpleindex/",
         auth=HTTPBasicAuth(admin_username, admin_newpwd)).json()
-    requests.post('http://elasticsearch:9200/_refresh/',)
+    requests.post('http://localhost:9200/_refresh/',)
     return response
 
 
 def create_index():
-    index_url = 'http://elasticsearch:9200/simpleindex/testdata/1'
+    index_url = 'http://localhost:9200/simpleindex/testdata/1'
     response = requests.get(
         index_url,
         auth=HTTPBasicAuth(admin_username, admin_newpwd))
@@ -53,7 +53,7 @@ def create_index():
 
 def os_stats():
     response = requests.get(
-        "http://elasticsearch:9200/_nodes/stats/os",
+        "http://localhost:9200/_nodes/stats/os",
         auth=HTTPBasicAuth(admin_username, admin_newpwd)).json()
     return response
 
@@ -71,10 +71,10 @@ def wait_for_elasticsearch(xpack=False, admin_username = admin_username, admin_p
     try:
         if xpack is True:
             reply = requests.get(
-                "http://elasticsearch:9200/_cluster/health",
+                "http://localhost:9200/_cluster/health",
                 auth=HTTPBasicAuth(admin_username, admin_pwd))
         else:
-            reply = requests.get('http://elasticsearch:9200')
+            reply = requests.get('http://localhost:9200')
     except requests.ConnectionError:
         raise DockerStackError("Elasticsearch is not answering.")
 
@@ -90,7 +90,7 @@ def wait_for_elasticsearch(xpack=False, admin_username = admin_username, admin_p
 
 
 def change_default_elastic_password():
-    reply = requests.put('http://elasticsearch:9200/_xpack/security/user/{}/_password'.format(admin_username),
+    reply = requests.put('http://localhost:9200/_xpack/security/user/{}/_password'.format(admin_username),
                          json={"password": admin_newpwd},
                          auth=HTTPBasicAuth(admin_username, admin_defaultpwd))
 

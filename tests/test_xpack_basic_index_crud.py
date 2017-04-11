@@ -42,7 +42,7 @@ def test_cluster_health_after_crud(docker_stack):
 def test_cgroup_os_stats(docker_stack):
     nodes_os_stats = os_stats()
     # Elasticsearch should be capable of returning cgroup stats for all nodes
-    for nodenane, node_os_stats in nodes_os_stats["nodes"].iteritems():
+    for nodenane, node_os_stats in nodes_os_stats["nodes"].items():
         assert 'cgroup' in node_os_stats['os']
         assert 'cpu' in node_os_stats['os']['cgroup']
         assert 'cpuacct' in node_os_stats['os']['cgroup']

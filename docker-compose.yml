@@ -30,6 +30,7 @@ services:
         hard: 65536
     volumes:
       - esdata1:/usr/share/elasticsearch/data
+
   elasticsearch2:
     build:
       context: build/elasticsearch
@@ -55,22 +56,13 @@ services:
         hard: 65536
     volumes:
       - esdata2:/usr/share/elasticsearch/data
-  tester:
-    build:
-      context: build/python
-    command: py.test -p no:cacheprovider tests/test_xpack_basic_index_crud.py
-    image: "tester:latest"
-    networks:
-      - esnet
-    links:
-      - elasticsearch1:elasticsearch
-    volumes:
-      - $PWD/tests:/home/testuser/tests:ro
+
 volumes:
   esdata1:
     driver: local
   esdata2:
     driver: local
+
 networks:
   esnet:
     driver: bridge
