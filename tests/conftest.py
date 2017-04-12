@@ -1,5 +1,4 @@
 from subprocess import run
-from os import environ
 
 
 def pytest_configure(config):
