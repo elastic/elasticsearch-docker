@@ -4,6 +4,7 @@ version: '2'
 services:
   # Can't use service elasticsearch=<num> for now due to named volumes
   elasticsearch1:
+    container_name: elasticsearch1
   # Equivalent to:
   # docker run --rm --cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536 -t -P --memory="4g" -v esdata:/usr/share/elasticsearch/data {{ versioned_image }}
     build:
@@ -27,6 +28,7 @@ services:
       - esdata1:/usr/share/elasticsearch/data
 
   elasticsearch2:
+    container_name: elasticsearch2
     build:
       context: build/elasticsearch
     cap_add:
