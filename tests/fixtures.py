@@ -1,5 +1,5 @@
 from .conftest import pytest_configure, pytest_unconfigure
-from pytest import fixture
+from pytest import config, fixture
 from retrying import retry
 import requests
 from requests import codes
@@ -30,8 +30,8 @@ def elasticsearch(Process, Command):
 
         def reset(self):
             """Reset Elasticsearch by destroying and recreating the containers."""
-            pytest_unconfigure(None)
-            pytest_configure(None)
+            pytest_unconfigure(config)
+            pytest_configure(config)
 
         @retry(**retry_settings)
         def get(self, location='/', **kwargs):
@@ -97,7 +97,11 @@ def elasticsearch(Process, Command):
 
         @retry(**retry_settings)
         def assert_healthy(self):
-            assert self.get_node_count() == 2
-            assert self.get_cluster_status() == 'green'
+            if config.getoption('--single_node'):
+                assert self.get_node_count() == 1
+                assert self.get_cluster_status() in ['yellow', 'green']
+            else:
+                assert self.get_node_count() == 2
+                assert self.get_cluster_status() == 'green'
 
     return Elasticsearch()
