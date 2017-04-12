@@ -21,8 +21,11 @@ DOCKER_COMPOSE := 'docker-compose -f docker-compose.yml -f docker-compose.hostpo
 .PHONY: test clean pristine run run-single run-cluster build push
 
 # Default target, build *and* run tests
-test: build docker-compose.yml
+test: lint build docker-compose.yml
 	./bin/testinfra --verbose tests
+
+lint: venv
+	flake8 tests
 
 clean:
 	docker-compose down -v
