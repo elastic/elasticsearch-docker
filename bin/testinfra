@@ -2,4 +2,4 @@
 #
 # A wrapper for `testinfra` to handle the appropriate Docker arguments.
 
-./venv/bin/testinfra --connection=docker --hosts=elasticsearch1 $@
+./venv/bin/testinfra --verbose --connection=docker --hosts=elasticsearch1 $@
