@@ -22,7 +22,7 @@ RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elas
 WORKDIR /usr/share/elasticsearch
 
 # Download/extract defined ES version. busybox tar can't strip leading dir.
-RUN wget --quiet {{ url_root }}/{{ tarball }} && \
+RUN wget {{ url_root }}/{{ tarball }} && \
     EXPECTED_SHA=$(wget -O - {{ url_root }}/{{ tarball }}.sha1) && \
     test $EXPECTED_SHA == $(sha1sum {{ tarball }} | awk '{print $1}') && \
     tar zxf {{ tarball }} && \
