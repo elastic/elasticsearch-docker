@@ -14,7 +14,7 @@ endif
 ELASTIC_REGISTRY := docker.elastic.co
 VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
 
-.PHONY: test clean run run-single run-cluster build push
+.PHONY: test clean pristine run run-single run-cluster build push
 
 # Default target, build *and* run tests
 test: build docker-compose.yml
