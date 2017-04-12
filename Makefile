@@ -14,6 +14,10 @@ endif
 ELASTIC_REGISTRY := docker.elastic.co
 VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
 
+# When invoking docker-compose, use an extra config fragment to map Elasticsearch's
+# listening port to the docker host.
+DOCKER_COMPOSE := 'docker-compose -f docker-compose.yml -f docker-compose.hostports.yml'
+
 .PHONY: test clean pristine run run-single run-cluster build push
 
 # Default target, build *and* run tests
@@ -31,12 +35,10 @@ pristine: clean
 run: run-single
 
 run-single: build
-	docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
-          up elasticsearch1
+	$(DOCKER_COMPOSE) up elasticsearch1
 
 run-cluster: build
-	docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
-          up elasticsearch1 elasticsearch2
+	$(DOCKER_COMPOSE) up elasticsearch1 elasticsearch2
 
 # Build docker image: "elasticsearch:$(VERSION_TAG)"
 build: clean dockerfile
