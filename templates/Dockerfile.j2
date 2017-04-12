@@ -1,0 +1,59 @@
+# This Dockerfile was generated from templates/Dockerfile.j2
+{% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
+{% if '-' in version_tag -%}
+{%   set is_staging_build = True -%}
+{%   set staging_build_num = version_tag | replace(elastic_version + '-', '') -%}
+{%   set url_root = 'http://staging.elastic.co/%s/downloads/elasticsearch' % version_tag -%}
+{% else -%}
+{%   set url_root = 'https://artifacts.elastic.co/downloads/elasticsearch' -%}
+{% endif -%}
+
+
+FROM centos:latest
+MAINTAINER Elastic Docker Team <docker@elastic.co>
+
+ENV PATH /usr/share/elasticsearch/bin:$PATH
+ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
+
+RUN yum install -y java-1.8.0-openjdk wget which && yum clean all
+
+RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elasticsearch elasticsearch
+
+WORKDIR /usr/share/elasticsearch
+
+# Download/extract defined ES version. busybox tar can't strip leading dir.
+RUN wget --quiet {{ url_root }}/{{ tarball }} && \
+    EXPECTED_SHA=$(wget -O - {{ url_root }}/{{ tarball }}.sha1) && \
+    test $EXPECTED_SHA == $(sha1sum {{ tarball }} | awk '{print $1}') && \
+    tar zxf {{ tarball }} && \
+    chown -R elasticsearch:elasticsearch elasticsearch-{{ elastic_version }} && \
+    mv elasticsearch-{{ elastic_version }}/* . && \
+    rmdir elasticsearch-{{ elastic_version }} && \
+    rm elasticsearch-{{ elastic_version }}.tar.gz
+
+RUN set -ex && for esdirs in config data logs; do \
+        mkdir -p "$esdirs"; \
+        chown -R elasticsearch:elasticsearch "$esdirs"; \
+    done
+
+USER elasticsearch
+
+# Install xpack
+{% if is_staging_build -%}
+RUN eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch x-pack
+{% else -%}
+RUN eval elasticsearch-plugin install --batch x-pack
+{% endif-%}
+
+COPY elasticsearch.yml config/
+COPY log4j2.properties config/
+COPY bin/es-docker bin/es-docker
+
+USER root
+RUN chown elasticsearch:elasticsearch config/elasticsearch.yml config/log4j2.properties bin/es-docker && \
+    chmod 0750 bin/es-docker
+
+USER elasticsearch
+CMD ["/bin/bash", "bin/es-docker"]
+
+EXPOSE 9200 9300
