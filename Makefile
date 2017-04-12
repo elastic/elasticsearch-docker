@@ -31,11 +31,11 @@ pristine: clean
 run: run-single
 
 run-single: build
-	ES_NODE_COUNT=1 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
+	docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
           up elasticsearch1
 
 run-cluster: build
-	ES_NODE_COUNT=2 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
+	docker-compose -f docker-compose.yml -f docker-compose.hostports.yml \
           up elasticsearch1 elasticsearch2
 
 # Build docker image: "elasticsearch:$(VERSION_TAG)"
