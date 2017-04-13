@@ -97,7 +97,7 @@ def elasticsearch(Process, Command):
 
         @retry(**retry_settings)
         def assert_healthy(self):
-            if config.getoption('--single_node'):
+            if config.getoption('--single-node'):
                 assert self.get_node_count() == 1
                 assert self.get_cluster_status() in ['yellow', 'green']
             else:
