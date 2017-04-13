@@ -49,8 +49,8 @@ def elasticsearch(Process, Command):
         def delete(self, location='/_all', **kwargs):
             return requests.delete(self.url + location, auth=self.auth, **kwargs)
 
-        def get_node_info(self):
-            return self.get().json()
+        def get_root_page(self):
+            return self.get('/').json()
 
         def get_cluster_health(self):
             return self.get('/_cluster/health').json()

@@ -1,0 +1,21 @@
+# This docker-compose fragment file provides settings that are specific to
+# running the test suite. Some of the settings are useful as "canaries", for
+# making assertions about the configuration.
+---
+version: '2'
+services:
+  elasticsearch1:
+    environment:
+      # Try setting an option with an environment variable.
+      - node.name=docker-test-node-1
+      # Also try a shell-friendly, all capitals variable.
+      - ES_CLUSTER_NAME=docker-test-cluster
+
+    # Expose elasticsearch to the host system, so that the test suite can see it.
+    ports:
+      - 9200:9200
+
+  elasticsearch2:
+    environment:
+      - node.name=docker-test-node-2
+      - ES_CLUSTER_NAME=docker-test-cluster

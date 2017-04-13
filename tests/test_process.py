@@ -11,5 +11,4 @@ def test_process_is_running_as_the_correct_user(elasticsearch):
 
 
 def test_process_is_running_the_correct_version(elasticsearch):
-    print(elasticsearch.get_node_info())
-    assert elasticsearch.get_node_info()['version']['number'] == version
+    assert elasticsearch.get_root_page()['version']['number'] == version

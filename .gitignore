@@ -3,5 +3,5 @@
 **/.cache
 *.pyc
 /venv
-docker-compose.yml
+/docker-compose.yml
 build/elasticsearch/Dockerfile

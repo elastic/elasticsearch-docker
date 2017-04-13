@@ -9,7 +9,7 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
-    compose_flags = '-f docker-compose.yml -f docker-compose.hostports.yml up -d'.split(' ')
+    compose_flags = '-f docker-compose.yml -f tests/docker-compose.yml up -d'.split(' ')
     if config.getoption('--single-node'):
         compose_flags.append('elasticsearch1')
 
