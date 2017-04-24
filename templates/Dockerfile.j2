@@ -9,13 +9,13 @@
 {% endif -%}
 
 
-FROM centos:latest
+FROM centos:7
 MAINTAINER Elastic Docker Team <docker@elastic.co>
 
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
 
-RUN yum install -y java-1.8.0-openjdk wget which && yum clean all
+RUN yum install -y java-1.8.0-openjdk-headless wget which && yum clean all
 
 RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elasticsearch elasticsearch
 
