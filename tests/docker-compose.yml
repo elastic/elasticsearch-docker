@@ -8,6 +8,8 @@ services:
     environment:
       # Try setting an option with an environment variable.
       - node.name=docker-test-node-1
+      # Define max heap to a non default value and let us test it's set correctly
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       # Also try a shell-friendly, all capitals variable.
       - ES_CLUSTER_NAME=docker-test-cluster
 
@@ -18,4 +20,5 @@ services:
   elasticsearch2:
     environment:
       - node.name=docker-test-node-2
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - ES_CLUSTER_NAME=docker-test-cluster

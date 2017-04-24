@@ -4,6 +4,7 @@ from retrying import retry
 import requests
 from requests import codes
 from requests.auth import HTTPBasicAuth
+from .helpers import filter_dict_by_parent_and_child_key
 
 retry_settings = {
     'stop_max_delay': 30000,
@@ -64,6 +65,13 @@ def elasticsearch(Process, Command):
         def get_node_os_stats(self):
             """Return an array of node OS statistics"""
             return self.get('/_nodes/stats/os').json()['nodes'].values()
+
+        def get_nodes_heap_max_in_bytes(self):
+            """Return an array with jvm mem stats"""
+            return filter_dict_by_parent_and_child_key(self.get('/_nodes/stats/jvm').json(),
+                                                       'jvm',
+                                                       'mem',
+                                                       'heap_max_in_bytes')
 
         def set_password(self, username, password):
             return self.put('/_xpack/security/user/%s/_password' % username,
