@@ -25,6 +25,9 @@ def elasticsearch(Process, Command):
             self.assert_healthy()
             self.process = Process.get(comm='java')
 
+            # Retain a handle to the Command fixture letting us execute commands within the container(s)
+            self.command = Command
+
             # Start each test with a clean slate.
             assert self.load_index_template().status_code == codes.ok
             assert self.delete().status_code == codes.ok
@@ -111,5 +114,16 @@ def elasticsearch(Process, Command):
             else:
                 assert self.get_node_count() == 2
                 assert self.get_cluster_status() == 'green'
+
+        def uninstall_plugin(self, plugin_name):
+            # This will run on only one host, but this is ok for the moment
+            # TODO: as per http://testinfra.readthedocs.io/en/latest/examples.html#test-docker-images
+            uninstall_output = self.command.run(' '.join(["bin/elasticsearch-plugin",
+                                                          "-s",
+                                                          "remove",
+                                                          "{}".format(plugin_name)]))
+            # Reset elasticsearch to its original state
+            self.reset()
+            return uninstall_output
 
     return Elasticsearch()
