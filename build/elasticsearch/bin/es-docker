@@ -8,7 +8,7 @@
 #
 # see https://www.elastic.co/guide/en/elasticsearch/reference/current/settings.html#_setting_default_settings
 
-es_opts=''
+declare -a es_opts
 
 while IFS='=' read -r envvar_key envvar_value
 do
@@ -17,7 +17,7 @@ do
     then
         if [[ ! -z $envvar_value ]]; then
           es_opt="-E${envvar_key}=${envvar_value}"
-          es_opts+=" ${es_opt}"
+          es_opts+=("${es_opt}")
         fi
     fi
 done < <(env)
@@ -36,4 +36,4 @@ done < <(env)
 # will run in.
 export ES_JAVA_OPTS="-Des.cgroups.hierarchy.override=/ $ES_JAVA_OPTS"
 
-exec bin/elasticsearch ${es_opts}
+exec bin/elasticsearch "${es_opts[@]}"
