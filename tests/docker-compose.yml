@@ -6,19 +6,23 @@ version: '2'
 services:
   elasticsearch1:
     environment:
-      # Try setting an option with an environment variable.
+      # Try setting a few options with environment variables.
+      - cluster.name=docker-test-cluster
       - node.name=docker-test-node-1
-      # Define max heap to a non default value and let us test it's set correctly
+      # Test setting max heap to a non default value with environment variables.
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      # Also try a shell-friendly, all capitals variable.
-      - ES_CLUSTER_NAME=docker-test-cluster
-
-    # Expose elasticsearch to the host system, so that the test suite can see it.
+      # Env vars not followed by a dot, should not be parsed by the wrapper script.
+      - irrelevantsetting=foo
+      # Capitalized or all-caps env vars should not be parsed either
+      - NonESRelatedVariable=bar
+    # Expose Elasticsearch to the host system, so that the test suite can see it.
     ports:
       - 9200:9200
 
   elasticsearch2:
     environment:
+      - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ES_CLUSTER_NAME=docker-test-cluster
+      - irrelevantsetting=foo
+      - NonESRelatedVariable=bar

@@ -16,7 +16,7 @@ default_index = 'testdata'
 
 
 @fixture()
-def elasticsearch(Process, Command):
+def elasticsearch(Process, Command, File):
     class Elasticsearch:
         def __init__(self):
             self.url = 'http://localhost:9200'
@@ -27,6 +27,9 @@ def elasticsearch(Process, Command):
 
             # Retain a handle to the Command fixture letting us execute commands within the container(s)
             self.command = Command
+
+            # Retain a handle to the File fixture letting us check files inside the container(s)
+            self.localfile = File
 
             # Start each test with a clean slate.
             assert self.load_index_template().status_code == codes.ok
@@ -125,5 +128,8 @@ def elasticsearch(Process, Command):
             # Reset elasticsearch to its original state
             self.reset()
             return uninstall_output
+
+        def es_cmdline(self):
+            return self.localfile("/proc/1/cmdline").content_string
 
     return Elasticsearch()

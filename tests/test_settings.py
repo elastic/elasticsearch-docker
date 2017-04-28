@@ -7,6 +7,11 @@ def test_setting_node_name_with_an_environment_variable(elasticsearch):
     assert elasticsearch.get_root_page()['name'].startswith('docker-test-node')
 
 
+def test_setting_cluster_name_with_an_environment_variable(elasticsearch):
+    # The fixture for this test comes from tests/docker-compose.yml
+    assert elasticsearch.get_root_page()['cluster_name'] == ('docker-test-cluster')
+
+
 def test_setting_heapsize_with_an_environment_variable(elasticsearch):
     # The fixture for this test comes from tests/docker-compose.yml
     heap_max_in_bytes = 1
@@ -15,7 +20,11 @@ def test_setting_heapsize_with_an_environment_variable(elasticsearch):
     assert bool(heap_max_in_bytes)
 
 
-@pytest.mark.xfail(raises=AssertionError, reason='Not yet implemented')
-def test_ES_CLUSTER_NAME_environment_variable(elasticsearch):
+def test_envar_not_including_a_dot_is_not_presented_to_elasticsearch(elasticsearch):
     # The fixture for this test comes from tests/docker-compose.yml
-    assert elasticsearch.get_root_page()['cluster_name'] == ('docker-test-cluster')
+    assert 'irrelevantsetting' not in elasticsearch.es_cmdline()
+
+
+def test_capitalized_envvar_is_not_presented_to_elasticsearch(elasticsearch):
+    # The fixture for this test comes from tests/docker-compose.yml
+    assert 'NonESRelatedVariable' not in elasticsearch.es_cmdline()
