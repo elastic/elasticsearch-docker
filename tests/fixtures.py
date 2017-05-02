@@ -66,6 +66,11 @@ def elasticsearch(host):
             """Return an array of node OS statistics"""
             return self.get('/_nodes/stats/os').json()['nodes'].values()
 
+        def get_node_plugins(self):
+            """Return an array of node plugins"""
+            nodes = self.get('/_nodes/plugins').json()['nodes'].values()
+            return [node['plugins'] for node in nodes]
+
         def get_node_jvm_stats(self):
             """Return an array of node JVM statistics"""
             nodes = self.get('/_nodes/stats/jvm').json()['nodes'].values()
