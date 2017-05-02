@@ -1,3 +1,3 @@
-def test_base_os(SystemInfo):
-    assert SystemInfo.distribution == 'centos'
-    assert SystemInfo.release == '7'
+def test_base_os(host):
+    assert host.system_info.distribution == 'centos'
+    assert host.system_info.release == '7'

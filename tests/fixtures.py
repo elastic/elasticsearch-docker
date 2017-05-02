@@ -15,20 +15,15 @@ default_index = 'testdata'
 
 
 @fixture()
-def elasticsearch(Process, Command, File):
-    class Elasticsearch:
+def elasticsearch(host):
+    class Elasticsearch():
         def __init__(self):
             self.url = 'http://localhost:9200'
             self.auth = HTTPBasicAuth('elastic', 'changeme')
 
             self.assert_healthy()
-            self.process = Process.get(comm='java')
 
-            # Retain a handle to the Command fixture letting us execute commands within the container(s)
-            self.command = Command
-
-            # Retain a handle to the File fixture letting us check files inside the container(s)
-            self.localfile = File
+            self.process = host.process.get(comm='java')
 
             # Start each test with a clean slate.
             assert self.load_index_template().status_code == codes.ok
@@ -118,15 +113,15 @@ def elasticsearch(Process, Command, File):
         def uninstall_plugin(self, plugin_name):
             # This will run on only one host, but this is ok for the moment
             # TODO: as per http://testinfra.readthedocs.io/en/latest/examples.html#test-docker-images
-            uninstall_output = self.command.run(' '.join(["bin/elasticsearch-plugin",
-                                                          "-s",
-                                                          "remove",
-                                                          "{}".format(plugin_name)]))
+            uninstall_output = host.run(' '.join(["bin/elasticsearch-plugin",
+                                                  "-s",
+                                                  "remove",
+                                                  "{}".format(plugin_name)]))
             # Reset elasticsearch to its original state
             self.reset()
             return uninstall_output
 
         def es_cmdline(self):
-            return self.localfile("/proc/1/cmdline").content_string
+            return host.file("/proc/1/cmdline").content_string
 
     return Elasticsearch()

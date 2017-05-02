@@ -4,4 +4,4 @@ jinja2-cli[yaml]==0.6.0
 jinja2==2.9.5
 requests==2.13.0
 retrying==1.3.3
-testinfra==1.5.4
+testinfra==1.6.0
