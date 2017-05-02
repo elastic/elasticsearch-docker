@@ -1,4 +1,5 @@
 # This Dockerfile was generated from templates/Dockerfile.j2
+{% set plugin_list = 'x-pack ingest-user-agent ingest-geoip' %}
 {% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
 {% if '-' in version_tag -%}
 {%   set is_staging_build = True -%}
@@ -38,11 +39,11 @@ RUN set -ex && for esdirs in config data logs; do \
 
 USER elasticsearch
 
-# Install xpack
+# Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
 {% if is_staging_build -%}
-RUN eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch x-pack
+RUN for PLUGIN_TO_INST in {{ plugin_list }}; do eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN_TO_INST"; done
 {% else -%}
-RUN eval elasticsearch-plugin install --batch x-pack
+RUN for PLUGIN_TO_INST in {{ plugin_list }}; do elasticsearch-plugin install --batch "$PLUGIN_TO_INST"; done
 {% endif-%}
 
 COPY elasticsearch.yml config/
