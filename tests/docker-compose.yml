@@ -10,7 +10,7 @@ services:
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-1
       # Test setting max heap to a non default value with environment variables.
-      - "ES_JAVA_OPTS=-Xms1151M -Xmx1151M"
+      - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       # Env vars not followed by a dot, should not be parsed by the wrapper script.
       - irrelevantsetting=foo
       # Capitalized or all-caps env vars should not be parsed either
@@ -23,6 +23,6 @@ services:
     environment:
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2
-      - "ES_JAVA_OPTS=-Xms1151M -Xmx1151M"
+      - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       - irrelevantsetting=foo
       - NonESRelatedVariable=bar
