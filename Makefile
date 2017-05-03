@@ -1,64 +1,70 @@
 SHELL=/bin/bash
+export PATH := ./bin:./venv/bin:$(PATH)
+
 ifndef ELASTIC_VERSION
-ELASTIC_VERSION=5.3.2
+ELASTIC_VERSION := $(shell cat version.txt)
 endif
 
 ifdef STAGING_BUILD_NUM
-IMAGETAG=$(ELASTIC_VERSION)-${STAGING_BUILD_NUM}
-ES_DOWNLOAD_URL=http://staging.elastic.co/$(IMAGETAG)/downloads/elasticsearch
-ES_JAVA_OPTS:=ES_JAVA_OPTS="-Des.plugins.staging=${STAGING_BUILD_NUM}"
+VERSION_TAG := $(ELASTIC_VERSION)-$(STAGING_BUILD_NUM)
 else
-IMAGETAG=$(ELASTIC_VERSION)
-ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch
+VERSION_TAG := $(ELASTIC_VERSION)
 endif
 
-ELASTIC_REGISTRY=docker.elastic.co
-BASEIMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch-alpine-base:latest
-VERSIONED_IMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(IMAGETAG)
-LATEST_IMAGE=$(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:latest
+ELASTIC_REGISTRY := docker.elastic.co
+VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
 
-export ELASTIC_VERSION
-export ES_DOWNLOAD_URL
-export ES_JAVA_OPTS
-export VERSIONED_IMAGE
+# When invoking docker-compose, use an extra config fragment to map Elasticsearch's
+# listening port to the docker host.
+DOCKER_COMPOSE := docker-compose -f docker-compose.yml -f docker-compose.hostports.yml
 
-.PHONY: build clean cluster-unicast-test pull-latest-baseimage push run-es-cluster run-es-single single-node-test test
+.PHONY: test clean pristine run run-single run-cluster build push
 
 # Default target, build *and* run tests
-test: single-node-test cluster-unicast-test
+test: lint build docker-compose.yml
+	./bin/testinfra tests
+	./bin/testinfra --single-node tests
 
-# Common target to ensure BASEIMAGE is latest
-pull-latest-baseimage:
-	docker pull $(BASEIMAGE)
+lint: venv
+	flake8 tests
 
-# Clean up left over containers and volumes from earlier failed runs
 clean:
-	docker-compose down -v && docker-compose rm -f -v
+	@if [ -f "docker-compose.yml" ]; then docker-compose down -v && docker-compose rm -f -v; fi
+	rm -f docker-compose.yml build/elasticsearch/Dockerfile
 
-run-es-single: pull-latest-baseimage
-	ES_NODE_COUNT=1 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml up --build elasticsearch1
+pristine: clean
+	docker rmi -f $(VERSIONED_IMAGE)
 
-run-es-cluster: pull-latest-baseimage
-	ES_NODE_COUNT=2 docker-compose -f docker-compose.yml -f docker-compose.hostports.yml up --build elasticsearch1 elasticsearch2
+run: run-single
 
-single-node-test: export ES_NODE_COUNT=1
-single-node-test: pull-latest-baseimage clean
-	docker-compose up -d --build elasticsearch1
-	docker-compose build --pull tester
-	docker-compose run tester
-	docker-compose down -v
+run-single: build docker-compose.yml
+	$(DOCKER_COMPOSE) up elasticsearch1
 
-cluster-unicast-test: export ES_NODE_COUNT=2
-cluster-unicast-test: pull-latest-baseimage clean
-	docker-compose up -d --build elasticsearch1 elasticsearch2
-	docker-compose build --pull tester
-	docker-compose run tester
-	docker-compose down -v
+run-cluster: build docker-compose.yml
+	$(DOCKER_COMPOSE) up elasticsearch1 elasticsearch2
 
-# Build docker image: "elasticsearch:$(IMAGETAG)"
-build: pull-latest-baseimage clean
-	docker-compose build --pull elasticsearch1
+# Build docker image: "elasticsearch:$(VERSION_TAG)"
+build: clean dockerfile
+	docker build -t $(VERSIONED_IMAGE) build/elasticsearch
 
-# Push to registry. Only push latest if not a staging build.
 push: test
 	docker push $(VERSIONED_IMAGE)
+
+# The tests are written in Python. Make a virtualenv to handle the dependencies.
+venv: requirements.txt
+	test -d venv || virtualenv --python=python3.5 venv
+	pip install -r requirements.txt
+	touch venv
+
+# Generate the Dockerfile from a Jinja2 template.
+dockerfile: venv templates/Dockerfile.j2
+	jinja2 \
+	  -D elastic_version='$(ELASTIC_VERSION)' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  templates/Dockerfile.j2 > build/elasticsearch/Dockerfile
+
+# Generate the docker-compose.yml from a Jinja2 template.
+docker-compose.yml: venv templates/docker-compose.yml.j2
+	jinja2 \
+	  -D versioned_image='$(VERSIONED_IMAGE)' \
+	  templates/docker-compose.yml.j2 > docker-compose.yml

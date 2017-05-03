@@ -1,0 +1,61 @@
+---
+# This file was generated from the template at templates/docker-compose.yml.j2
+version: '2'
+services:
+  # Can't use service elasticsearch=<num> for now due to named volumes
+  elasticsearch1:
+    container_name: elasticsearch1
+  # Equivalent to:
+  # docker run --rm --cap-add=IPC_LOCK --ulimit memlock=-1:-1 --ulimit nofile=65536:65536 -t -P --memory="4g" -v esdata:/usr/share/elasticsearch/data {{ versioned_image }}
+    build:
+      context: build/elasticsearch
+    cap_add:
+      - IPC_LOCK
+    image: {{ versioned_image }}
+    mem_limit: 4g
+    networks:
+      esnet:
+        aliases:
+          - elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+
+  elasticsearch2:
+    container_name: elasticsearch2
+    build:
+      context: build/elasticsearch
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - discovery.zen.ping.unicast.hosts=elasticsearch1
+      - node.master=false
+    image: {{ versioned_image }}
+    mem_limit: 4g
+    networks:
+      - esnet
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+
+networks:
+  esnet:
+    driver: bridge

@@ -1,30 +1,34 @@
 <!--
-Please note that issues should be used for bugs and feature requests.
-If you have a general support question, consider asking it on the
-[Elastic discussion forums](https://discuss.elastic.co/) before
-creating an issue to determine whether your question is for support
-or an actual bug/feature.
+Please note that issues should be used for bugs and feature
+requests. Please post all questions and issues on
+https://discuss.elastic.co/c/elasticsearch before opening a GitHub
+issue. Your questions will reach a wider audience there, and if we
+confirm that there is a bug, then you can open a new issue.
+
+For security vulnerabilities please only send reports to
+security@elastic.co. See https://www.elastic.co/community/security for
+more information.
 
 Please use **only one** of the following examples depending upon
 whether you are reporting a bug or feature request.
 -->
 
 <!--
-If you are filing a bug report, please remove the Feature
-Description block and provide responses for all of the below items.
+For confirmed bugs, please remove the Feature
+Description block and provide responses for **all** of the below items.
 
-Please also include an example docker-compose file or docker run
-command and docker logs if relevant.  -->
+* Docker image used
+* Operating System
+* `docker info` output
+* `docker-compose --version`, if relevant
+* Steps to reproduce
+-->
 
-* `docker info` output:
-* `docker-compose` version:
-* Host OS and version:
-
-## Bug description
+## Bug Description
 
 <!--
 If you are filing a feature request, please remove the above bug
-report block and describe the feature below the heading.
+description block and describe the feature below the heading.
 -->
 
 ## Feature Description
