@@ -129,4 +129,7 @@ def elasticsearch(host):
         def es_cmdline(self):
             return host.file("/proc/1/cmdline").content_string
 
+        def run_command_on_host(self, command):
+            return host.run(command)
+
     return Elasticsearch()
