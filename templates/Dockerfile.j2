@@ -1,13 +1,13 @@
 # This Dockerfile was generated from templates/Dockerfile.j2
 {% set plugin_list = 'x-pack ingest-user-agent ingest-geoip' %}
-{% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
-{% if '-' in version_tag -%}
-{%   set is_staging_build = True -%}
-{%   set staging_build_num = version_tag | replace(elastic_version + '-', '') -%}
+{% if staging_build_num -%}
+{%   set version_tag = elastic_version + '-' + staging_build_num -%}
 {%   set url_root = 'http://staging.elastic.co/%s/downloads/elasticsearch' % version_tag -%}
 {% else -%}
+{%   set version_tag = elastic_version -%}
 {%   set url_root = 'https://artifacts.elastic.co/downloads/elasticsearch' -%}
 {% endif -%}
+{% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
 
 
 FROM centos:7

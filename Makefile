@@ -60,11 +60,11 @@ venv: requirements.txt
 dockerfile: venv templates/Dockerfile.j2
 	jinja2 \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
-	  -D version_tag='$(VERSION_TAG)' \
+	  -D staging_build_num='$(STAGING_BUILD_NUM)' \
 	  templates/Dockerfile.j2 > build/elasticsearch/Dockerfile
 
 # Generate the docker-compose.yml from a Jinja2 template.
 docker-compose.yml: venv templates/docker-compose.yml.j2
 	jinja2 \
-	  -D versioned_image='$(VERSIONED_IMAGE)' \
+	  -D version_tag='$(VERSION_TAG)' \
 	  templates/docker-compose.yml.j2 > docker-compose.yml
