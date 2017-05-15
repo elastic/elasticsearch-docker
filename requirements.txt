@@ -1,5 +1,6 @@
 docker-compose==1.11.2
 flake8==3.3.0
+ipdb
 jinja2-cli[yaml]==0.6.0
 jinja2==2.9.5
 requests==2.13.0

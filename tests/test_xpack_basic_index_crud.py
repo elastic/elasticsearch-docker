@@ -18,7 +18,8 @@ def test_create_index(elasticsearch):
 
 
 def test_search(elasticsearch):
-    elasticsearch.load_test_data()
+    response = elasticsearch.load_test_data()
+    assert response.status_code == codes.created
     hits = elasticsearch.query_all().json()['hits']['hits']
     assert 'lorem' in hits[0]['_source'].values()
     assert 'ipsum' in hits[0]['_source'].values()

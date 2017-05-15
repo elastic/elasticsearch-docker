@@ -12,6 +12,7 @@ retry_settings = {
 }
 
 default_index = 'testdata'
+http_api_headers = {'Content-Type': 'application/json'}
 
 
 @fixture()
@@ -40,11 +41,11 @@ def elasticsearch(host):
 
         @retry(**retry_settings)
         def put(self, location='/', **kwargs):
-            return requests.put(self.url + location, auth=self.auth, **kwargs)
+            return requests.put(self.url + location, headers=http_api_headers, auth=self.auth, **kwargs)
 
         @retry(**retry_settings)
         def post(self, location='/%s/1' % default_index, **kwargs):
-            return requests.post(self.url + location, auth=self.auth, **kwargs)
+            return requests.post(self.url + location, headers=http_api_headers, auth=self.auth, **kwargs)
 
         @retry(**retry_settings)
         def delete(self, location='/_all', **kwargs):
@@ -101,7 +102,7 @@ def elasticsearch(host):
 
         def load_test_data(self):
             self.create_index()
-            self.post(
+            return self.post(
                 data=open('tests/testdata.json').read(),
                 params={"refresh": "wait_for"}
             )
