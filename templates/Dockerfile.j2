@@ -40,7 +40,7 @@ RUN set -ex && for esdirs in config data logs; do \
 USER elasticsearch
 
 # Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
-{% if is_staging_build -%}
+{% if staging_build_num -%}
 RUN for PLUGIN_TO_INST in {{ plugin_list }}; do eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN_TO_INST"; done
 {% else -%}
 RUN for PLUGIN_TO_INST in {{ plugin_list }}; do elasticsearch-plugin install --batch "$PLUGIN_TO_INST"; done
