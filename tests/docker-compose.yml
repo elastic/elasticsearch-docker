@@ -9,6 +9,8 @@ services:
       # Try setting a few options with environment variables.
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-1
+      # Also try a parameter containing an underscore character.
+      - thread_pool.bulk.queue_size=500
       # Test setting max heap to a non default value with environment variables.
       - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       # Env vars not followed by a dot, should not be parsed by the wrapper script.
@@ -23,6 +25,7 @@ services:
     environment:
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2
+      - thread_pool.bulk.queue_size=500
       - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       - irrelevantsetting=foo
       - NonESRelatedVariable=bar

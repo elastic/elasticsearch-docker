@@ -27,6 +27,12 @@ def test_setting_heapsize_with_an_environment_variable(elasticsearch):
         assert abs(reported_heap_max_in_mb - 1152) < mem_delta_mb
 
 
+def test_parameter_containing_underscore_with_an_environment_variable(elasticsearch):
+    # The fixture for this test comes from tests/docker-compose.yml
+    for thread_pool_queue_size in elasticsearch.get_node_thread_pool_bulk_queue_size():
+        assert '500' == thread_pool_queue_size
+
+
 def test_envar_not_including_a_dot_is_not_presented_to_elasticsearch(elasticsearch):
     # The fixture for this test comes from tests/docker-compose.yml
     assert 'irrelevantsetting' not in elasticsearch.es_cmdline()

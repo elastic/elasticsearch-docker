@@ -72,6 +72,11 @@ def elasticsearch(host):
             nodes = self.get('/_nodes/plugins').json()['nodes'].values()
             return [node['plugins'] for node in nodes]
 
+        def get_node_thread_pool_bulk_queue_size(self):
+            """Return an array of thread_pool bulk queue size settings for nodes"""
+            nodes = self.get('/_nodes?filter_path=**.thread_pool').json()['nodes'].values()
+            return [node['settings']['thread_pool']['bulk']['queue_size'] for node in nodes]
+
         def get_node_jvm_stats(self):
             """Return an array of node JVM statistics"""
             nodes = self.get('/_nodes/stats/jvm').json()['nodes'].values()
