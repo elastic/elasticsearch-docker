@@ -47,8 +47,11 @@ run-cluster: build docker-compose.yml
 build: clean dockerfile
 	docker build -t $(VERSIONED_IMAGE) build/elasticsearch
 
+# Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
-	docker push $(VERSIONED_IMAGE)
+	docker tag $(VERSIONED_IMAGE) push.$(VERSIONED_IMAGE)
+	docker push push.$(VERSIONED_IMAGE)
+	docker rmi push.$(VERSIONED_IMAGE)
 
 # The tests are written in Python. Make a virtualenv to handle the dependencies.
 venv: requirements.txt
