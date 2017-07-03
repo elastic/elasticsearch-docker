@@ -52,7 +52,11 @@ COPY x-pack/log4j2.properties config/x-pack/
 COPY bin/es-docker bin/es-docker
 
 USER root
-RUN chown elasticsearch:elasticsearch config/elasticsearch.yml config/log4j2.properties bin/es-docker && \
+RUN chown elasticsearch:elasticsearch \
+      config/elasticsearch.yml \
+      config/log4j2.properties \
+      config/x-pack/log4j2.properties \
+      bin/es-docker && \
     chmod 0750 bin/es-docker
 
 USER elasticsearch
