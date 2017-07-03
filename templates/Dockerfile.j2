@@ -47,8 +47,8 @@ RUN for PLUGIN_TO_INST in {{ plugin_list }}; do eval ES_JAVA_OPTS="-Des.plugins.
 RUN for PLUGIN_TO_INST in {{ plugin_list }}; do elasticsearch-plugin install --batch "$PLUGIN_TO_INST"; done
 {% endif-%}
 
-COPY elasticsearch.yml config/
-COPY log4j2.properties config/
+COPY elasticsearch.yml log4j2.properties config/
+COPY x-pack/log4j2.properties config/x-pack/
 COPY bin/es-docker bin/es-docker
 
 USER root
