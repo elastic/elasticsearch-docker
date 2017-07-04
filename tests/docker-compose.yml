@@ -5,6 +5,8 @@
 version: '2'
 services:
   elasticsearch1:
+    # Let Testinfra infer the container name by making the hostname the same.
+    hostname: elasticsearch1
     environment:
       # Try setting a few options with environment variables.
       - cluster.name=docker-test-cluster
@@ -17,11 +19,14 @@ services:
       - irrelevantsetting=foo
       # Capitalized or all-caps env vars should not be parsed either
       - NonESRelatedVariable=bar
+      # Enable Security audit logging so we can check the output for correctness.
+      - xpack.security.audit.enabled=true
     # Expose Elasticsearch to the host system, so that the test suite can see it.
     ports:
       - 9200:9200
 
   elasticsearch2:
+    hostname: elasticsearch2
     environment:
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2

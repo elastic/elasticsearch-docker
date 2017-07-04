@@ -4,6 +4,7 @@ from retrying import retry
 import requests
 from requests import codes
 from requests.auth import HTTPBasicAuth
+from subprocess import run, PIPE
 
 retry_settings = {
     'stop_max_delay': 30000,
@@ -137,5 +138,28 @@ def elasticsearch(host):
 
         def run_command_on_host(self, command):
             return host.run(command)
+
+        def get_hostname(self):
+            return host.run('hostname').stdout.strip()
+
+        def get_docker_log(self):
+            proc = run(['docker-compose', 'logs', self.get_hostname()], stdout=PIPE)
+            return proc.stdout.decode()
+
+        def assert_in_docker_log(self, string):
+            log = self.get_docker_log()
+            try:
+                assert string in log
+            except AssertionError:
+                print(log)
+                raise
+
+        def assert_not_in_docker_log(self, string):
+            log = self.get_docker_log()
+            try:
+                assert string not in log
+            except AssertionError:
+                print(log)
+                raise
 
     return Elasticsearch()
