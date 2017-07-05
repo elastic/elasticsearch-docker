@@ -1,9 +1,13 @@
 # This Dockerfile was generated from templates/Dockerfile.j2
-{% set plugin_list = 'x-pack ingest-user-agent ingest-geoip' %}
+{% set ingest_plugins = 'ingest-user-agent ingest-geoip' %}
 {% set version_tag = elastic_version -%}
 {% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
 
-{% if elastic_version.endswith('-SNAPSHOT') -%}
+{% if release_manager and elastic_version.endswith('-SNAPSHOT')-%}
+{%   set url_root = 'http://localhost/build/snapshot-artifacts/elasticsearch/distribution/tar/build/distributions' -%}
+{%   set x_pack_url_root = 'http://localhost/build/snapshot-artifacts/x-pack-elasticsearch/plugin/build/distributions' -%}
+{%   set plugin_url_root = 'http://localhost/build/snapshot-artifacts/elasticsearch/plugins/$PLUGIN/build/distributions' -%}
+{% elif elastic_version.endswith('-SNAPSHOT') -%}
 {%   set url_root = 'https://snapshots.elastic.co/downloads/elasticsearch' -%}
 {% elif staging_build_num -%}
 {%   set version_tag = version_tag + '-' + staging_build_num -%}
@@ -11,7 +15,6 @@
 {% else -%}
 {%   set url_root = 'https://artifacts.elastic.co/downloads/elasticsearch' -%}
 {% endif -%}
-
 
 FROM centos:7
 LABEL maintainer "Elastic Docker Team <docker@elastic.co>"
@@ -26,10 +29,8 @@ RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elas
 
 WORKDIR /usr/share/elasticsearch
 
-# Download/extract defined ES version. busybox tar can't strip leading dir.
+# Download and extract defined ES version. busybox tar can't strip leading dir.
 RUN wget --progress=bar:force {{ url_root }}/{{ tarball }} && \
-    EXPECTED_SHA=$(wget -O - {{ url_root }}/{{ tarball }}.sha1) && \
-    test $EXPECTED_SHA == $(sha1sum {{ tarball }} | awk '{print $1}') && \
     tar zxf {{ tarball }} && \
     chown -R elasticsearch:elasticsearch elasticsearch-{{ elastic_version }} && \
     mv elasticsearch-{{ elastic_version }}/* . && \
@@ -44,10 +45,19 @@ RUN set -ex && for esdirs in config data logs; do \
 USER elasticsearch
 
 # Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
-{% if staging_build_num -%}
-RUN for PLUGIN_TO_INST in {{ plugin_list }}; do eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN_TO_INST"; done
+{% if release_manager -%}
+RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip" && \
+    for PLUGIN in {{ ingest_plugins }}; do \
+      elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN-{{ elastic_version }}.zip"; \
+    done
+{% elif staging_build_num -%}
+RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
+      eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN"; \
+    done
 {% else -%}
-RUN for PLUGIN_TO_INST in {{ plugin_list }}; do elasticsearch-plugin install --batch "$PLUGIN_TO_INST"; done
+RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
+      elasticsearch-plugin install --batch "$PLUGIN"; \
+    done
 {% endif-%}
 
 COPY elasticsearch.yml log4j2.properties config/

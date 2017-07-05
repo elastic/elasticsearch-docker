@@ -18,9 +18,11 @@ VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG
 # listening port to the docker host.
 DOCKER_COMPOSE := docker-compose -f docker-compose.yml -f docker-compose.hostports.yml
 
-.PHONY: test clean pristine run run-single run-cluster build push
+.PHONY: all test lint clean pristine run run-single run-cluster build release-manager-snapshot push
 
 # Default target, build *and* run tests
+all: build test
+
 test: lint build docker-compose.yml
 	./bin/pytest tests
 	./bin/pytest --single-node tests
@@ -47,6 +49,13 @@ run-cluster: build docker-compose.yml
 build: clean dockerfile
 	docker build -t $(VERSIONED_IMAGE) build/elasticsearch
 
+release-manager-snapshot: clean
+	RELEASE_MANAGER=true \
+	ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT \
+	  make dockerfile && \
+	  docker build --network=host -t $(VERSIONED_IMAGE) build/elasticsearch && \
+	  # make test
+
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
 	docker tag $(VERSIONED_IMAGE) push.$(VERSIONED_IMAGE)
@@ -64,6 +73,7 @@ dockerfile: venv templates/Dockerfile.j2
 	jinja2 \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
 	  -D staging_build_num='$(STAGING_BUILD_NUM)' \
+	  -D release_manager='$(RELEASE_MANAGER)' \
 	  templates/Dockerfile.j2 > build/elasticsearch/Dockerfile
 
 # Generate the docker-compose.yml from a Jinja2 template.
