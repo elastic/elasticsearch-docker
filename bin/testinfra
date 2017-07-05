@@ -1,5 +1,0 @@
-#!/bin/bash
-#
-# A wrapper for `testinfra` to handle the appropriate Docker arguments.
-
-./venv/bin/testinfra --verbose --connection=docker --hosts=elasticsearch1 $@

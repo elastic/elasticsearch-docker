@@ -22,8 +22,8 @@ DOCKER_COMPOSE := docker-compose -f docker-compose.yml -f docker-compose.hostpor
 
 # Default target, build *and* run tests
 test: lint build docker-compose.yml
-	./bin/testinfra tests
-	./bin/testinfra --single-node tests
+	./bin/pytest tests
+	./bin/pytest --single-node tests
 
 lint: venv
 	flake8 tests
