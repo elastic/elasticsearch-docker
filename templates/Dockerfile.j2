@@ -7,8 +7,6 @@
 {%   set url_root = 'http://localhost/build/snapshot-artifacts/elasticsearch/distribution/tar/build/distributions' -%}
 {%   set x_pack_url_root = 'http://localhost/build/snapshot-artifacts/x-pack-elasticsearch/plugin/build/distributions' -%}
 {%   set plugin_url_root = 'http://localhost/build/snapshot-artifacts/elasticsearch/plugins/$PLUGIN/build/distributions' -%}
-{% elif elastic_version.endswith('-SNAPSHOT') -%}
-{%   set url_root = 'https://snapshots.elastic.co/downloads/elasticsearch' -%}
 {% elif staging_build_num -%}
 {%   set version_tag = version_tag + '-' + staging_build_num -%}
 {%   set url_root = 'https://staging.elastic.co/%s/downloads/elasticsearch' % version_tag -%}
