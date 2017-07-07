@@ -50,10 +50,12 @@ build: clean dockerfile
 	docker build -t $(VERSIONED_IMAGE) build/elasticsearch
 
 release-manager-snapshot: clean
-	RELEASE_MANAGER=true \
-	ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT \
-	  make dockerfile && \
-	  docker build --network=host -t $(VERSIONED_IMAGE)-SNAPSHOT build/elasticsearch
+	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make dockerfile
+	docker build --network=host -t $(VERSIONED_IMAGE)-SNAPSHOT build/elasticsearch
+
+release-manager-release: clean
+	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION) make dockerfile
+	docker build --network=host -t $(VERSIONED_IMAGE) build/elasticsearch
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
