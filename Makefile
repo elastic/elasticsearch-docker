@@ -2,7 +2,7 @@ SHELL=/bin/bash
 export PATH := ./bin:./venv/bin:$(PATH)
 
 ifndef ELASTIC_VERSION
-ELASTIC_VERSION := $(shell cat version.txt)
+ELASTIC_VERSION := $(shell ./bin/elastic-version)
 endif
 
 ifdef STAGING_BUILD_NUM

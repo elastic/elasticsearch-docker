@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+#
+# Print the Elastic Stack version for the current branch, as defined in
+# the 'version.json' file.
+#
+# The branch can also be forced by setting the GIT_BRANCH environment variable.
+
+import json
+from subprocess import run, PIPE
+from os import environ
+
+version_map = json.load(open('version.json'))
+git = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
+
+try:
+    branch = environ['GIT_BRANCH']
+except KeyError:
+    branch = run(git, stdout=PIPE).stdout.decode().strip()
+
+elastic_version = version_map['branches'][branch]
+
+if __name__ == '__main__':
+    print(elastic_version)
