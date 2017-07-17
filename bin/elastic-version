@@ -6,18 +6,36 @@
 # The branch can also be forced by setting the GIT_BRANCH environment variable.
 
 import json
+import re
 from subprocess import run, PIPE
 from os import environ
 
 version_map = json.load(open('version.json'))
-git = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
 
+
+def shell(cmd):
+    return run(cmd, stdout=PIPE).stdout.decode().strip()
+
+
+# Some environments, particularly Jenkins, set $GIT_BRANCH. Honour it.
 try:
     branch = environ['GIT_BRANCH']
+# If $GIT_BRANCH isn't set, ask 'git' what branch we are on.
 except KeyError:
-    branch = run(git, stdout=PIPE).stdout.decode().strip()
+    branch = shell(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+
+# Running "git rev-parse --abbrev-ref HEAD" will resolve to a branch name if
+# we are on a branch, but it's possible that we are in a "detached head state".
+# If that's the case, our rev-parse attempt will simply resolve back to "HEAD".
+if branch == 'HEAD':
+    # We will have to deduce the branch from which were detached.
+    match = re.search(r'HEAD detached at [^/]+/(\w*)', shell(['git', 'branch']))
+    branch = match.group(1)
+    # eg. "(HEAD detached at origin/master)"
+    #                               ^^^^^^
 
 elastic_version = version_map['branches'][branch]
+
 
 if __name__ == '__main__':
     print(elastic_version)
