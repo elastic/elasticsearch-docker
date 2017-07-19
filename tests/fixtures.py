@@ -2,6 +2,7 @@ from .conftest import pytest_configure, pytest_unconfigure
 from pytest import config, fixture
 from retrying import retry
 import requests
+import ipdb
 from requests import codes
 from requests.auth import HTTPBasicAuth
 from subprocess import run, PIPE
@@ -19,9 +20,11 @@ http_api_headers = {'Content-Type': 'application/json'}
 @fixture()
 def elasticsearch(host):
     class Elasticsearch():
+        bootstrap_pwd = "pleasechangeme"
+
         def __init__(self):
             self.url = 'http://localhost:9200'
-            self.auth = HTTPBasicAuth('elastic', 'changeme')
+            self.auth = HTTPBasicAuth('elastic', Elasticsearch.bootstrap_pwd)
 
             self.assert_healthy()
 
@@ -83,6 +86,7 @@ def elasticsearch(host):
             nodes = self.get('/_nodes/stats/jvm').json()['nodes'].values()
             return [node['jvm'] for node in nodes]
 
+        @retry(**retry_settings)
         def set_password(self, username, password):
             return self.put('/_xpack/security/user/%s/_password' % username,
                             json={"password": password})

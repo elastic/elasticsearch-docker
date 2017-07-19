@@ -8,6 +8,7 @@ services:
     # Let Testinfra infer the container name by making the hostname the same.
     hostname: elasticsearch1
     environment:
+      - ELASTIC_PWD=pleasechangeme
       # Try setting a few options with environment variables.
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-1
@@ -28,6 +29,7 @@ services:
   elasticsearch2:
     hostname: elasticsearch2
     environment:
+      - ELASTIC_PWD=pleasechangeme
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2
       - thread_pool.bulk.queue_size=500

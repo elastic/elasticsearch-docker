@@ -1,5 +1,6 @@
 from .fixtures import elasticsearch
 from requests import codes
+import pytest
 
 
 def test_uninstall_xpack_plugin(elasticsearch):
@@ -7,6 +8,7 @@ def test_uninstall_xpack_plugin(elasticsearch):
     assert elasticsearch.uninstall_plugin("x-pack").exit_status == 0
 
 
+@pytest.mark.xfail(raises=AssertionError, reason='Temporarily disabled for -SNAPSHOT tests')
 def test_IngestUserAgentPlugin_is_installed(elasticsearch):
     # Ensure IngestUserAgentPlugin is present on all nodes
     for nodeplugins in elasticsearch.get_node_plugins():
@@ -14,6 +16,7 @@ def test_IngestUserAgentPlugin_is_installed(elasticsearch):
         assert 'org.elasticsearch.ingest.useragent.IngestUserAgentPlugin' in plugin_classnames
 
 
+@pytest.mark.xfail(raises=AssertionError, reason='Temporarily disabled for -SNAPSHOT tests')
 def test_IngestGeoIpPlugin_is_installed(elasticsearch):
     # Ensure IngestGeoIpPlugin is present on all nodes
     for nodeplugins in elasticsearch.get_node_plugins():

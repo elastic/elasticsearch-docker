@@ -75,6 +75,7 @@ dockerfile: venv templates/Dockerfile.j2
 	  -D elastic_version='$(ELASTIC_VERSION)' \
 	  -D staging_build_num='$(STAGING_BUILD_NUM)' \
 	  -D release_manager='$(RELEASE_MANAGER)' \
+	  -D base_xpack_path='$(BASE_XPACK_PATH)' \
 	  templates/Dockerfile.j2 > build/elasticsearch/Dockerfile
 
 # Generate the docker-compose.yml from a Jinja2 template.

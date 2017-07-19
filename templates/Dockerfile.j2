@@ -14,6 +14,9 @@
 {% elif staging_build_num -%}
 {%   set version_tag = version_tag + '-' + staging_build_num -%}
 {%   set url_root = 'https://staging.elastic.co/%s/downloads/elasticsearch' % version_tag -%}
+{% elif elastic_version.endswith('-SNAPSHOT') -%}
+{%   set version_tag = elastic_version -%}
+{%   set url_root = 'https://snapshots.elastic.co/downloads/elasticsearch' -%}
 {% else -%}
 {%   set url_root = 'https://artifacts.elastic.co/downloads/elasticsearch' -%}
 {% endif -%}
@@ -25,7 +28,7 @@ ENV ELASTIC_CONTAINER true
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /usr/lib/jvm/jre-1.8.0-openjdk
 
-RUN yum update -y && yum install -y java-1.8.0-openjdk-headless wget which && yum clean all
+RUN yum update -y && yum install -y java-1.8.0-openjdk-headless unzip wget which && yum clean all
 
 RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elasticsearch elasticsearch
 
@@ -56,13 +59,16 @@ RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elasti
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
       eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN"; \
     done
+{% elif elastic_version.endswith('-SNAPSHOT') -%}
+   COPY {{ base_xpack_path }}/x-pack-{{ elastic_version }}.zip /tmp/x-pack-{{ elastic_version }}.zip
+   RUN elasticsearch-plugin install file:///tmp/x-pack-{{ elastic_version }}.zip
 {% else -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
       elasticsearch-plugin install --batch "$PLUGIN"; \
     done
 {% endif-%}
 
-COPY elasticsearch.yml log4j2.properties config/
+COPY elasticsearch.yml certgen_instances.yml log4j2.properties config/
 COPY x-pack/log4j2.properties config/x-pack/
 COPY bin/es-docker bin/es-docker
 
@@ -75,6 +81,9 @@ RUN chown elasticsearch:elasticsearch \
     chmod 0750 bin/es-docker
 
 USER elasticsearch
+
+RUN bin/x-pack/certgen -s -in config/certgen_instances.yml --out config/certs.zip && unzip -d config/x-pack/ config/certs.zip && rm config/certs.zip config/certgen_instances.yml
+
 CMD ["/bin/bash", "bin/es-docker"]
 
 EXPOSE 9200 9300

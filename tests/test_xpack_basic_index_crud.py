@@ -2,9 +2,9 @@ from .fixtures import elasticsearch
 from requests import codes
 
 
-def test_password_change(elasticsearch):
+def test_bootstrap_password_change(elasticsearch):
     try:
-        elasticsearch.set_password('elastic', 'newpass')
+        elasticsearch.set_password('elastic', 'thenewpassword')
         assert elasticsearch.get().status_code == codes.unauthorized
     finally:
         elasticsearch.reset()
