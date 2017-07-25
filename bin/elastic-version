@@ -19,7 +19,7 @@ def shell(cmd):
 
 # Some environments, particularly Jenkins, set $GIT_BRANCH. Honour it.
 try:
-    branch = environ['GIT_BRANCH']
+    branch = environ['GIT_BRANCH'].lstrip('origin/')
 # If $GIT_BRANCH isn't set, ask 'git' what branch we are on.
 except KeyError:
     branch = shell(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
