@@ -1,6 +1,2 @@
 instances:
   - name: "node01"
-    ip:
-      - "172.17.0.2"
-    dns:
-      - "node01.mydomain.com"
