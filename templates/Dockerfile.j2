@@ -34,20 +34,15 @@ RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elas
 
 WORKDIR /usr/share/elasticsearch
 
-# Download and extract defined ES version. busybox tar can't strip leading dir.
-RUN wget --progress=bar:force {{ url_root }}/{{ tarball }} && \
-    tar zxf {{ tarball }} && \
-    chown -R elasticsearch:elasticsearch elasticsearch-{{ elastic_version }} && \
-    mv elasticsearch-{{ elastic_version }}/* . && \
-    rmdir elasticsearch-{{ elastic_version }} && \
-    rm elasticsearch-{{ elastic_version }}.tar.gz
+USER elasticsearch
+
+# Download and extract defined ES version.
+RUN curl -L {{ url_root }}/{{ tarball }} | \
+    tar zx --strip-components=1
 
 RUN set -ex && for esdirs in config data logs; do \
         mkdir -p "$esdirs"; \
-        chown -R elasticsearch:elasticsearch "$esdirs"; \
     done
-
-USER elasticsearch
 
 # Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
 {% if release_manager -%}
