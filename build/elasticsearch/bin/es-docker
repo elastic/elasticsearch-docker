@@ -41,9 +41,21 @@ if bin/elasticsearch-plugin list -s | grep x-pack; then
     # LDAP is used). As we have no way of knowing if this is the first
     # node at this step, we can't enforce the presence of this env
     # var.
-    if [ -n $ELASTIC_PWD ]; then
+    if [ -n "$ELASTIC_PWD" ]; then
         [[ -f config/elasticsearch.keystore ]] || bin/elasticsearch-keystore create
         echo "$ELASTIC_PWD" | bin/elasticsearch-keystore add -x 'bootstrap.password'
+    fi
+
+    # Permit the use of a pre-bundled self signed cert for transport TLS
+    # through ALLOW_INSECURE_DEFAULT_TLS_CERT flag
+    # This should be used strictly for on non production environments.
+    if [ ! -z ${ALLOW_INSECURE_DEFAULT_TLS_CERT+dummy} ]; then
+        es_opts+=( '-Expack.security.authc.token.enabled=false'
+                   '-Expack.ssl.verification_mode=certificate'
+                   '-Expack.ssl.key=x-pack/node01/node01.key'
+                   '-Expack.ssl.certificate=x-pack/node01/node01.crt'
+                   '-Expack.ssl.certificate_authorities=x-pack/ca/ca.crt'
+                 )
     fi
 fi
 
