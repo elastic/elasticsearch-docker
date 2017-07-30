@@ -34,7 +34,7 @@ WORKDIR /usr/share/elasticsearch
 USER elasticsearch
 
 # Download and extract defined ES version.
-RUN curl -L {{ url_root }}/{{ tarball }} | \
+RUN curl -fsSL {{ url_root }}/{{ tarball }} | \
     tar zx --strip-components=1
 
 RUN set -ex && for esdirs in config data logs; do \
