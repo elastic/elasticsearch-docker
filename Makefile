@@ -65,9 +65,21 @@ push: test
 
 # The tests are written in Python. Make a virtualenv to handle the dependencies.
 venv: requirements.txt
-	test -d venv || virtualenv --python=python3.5 venv
-	pip install -r requirements.txt
-	touch venv
+	@if [ -z $$PYTHON3 ]; then\
+	    PY3_MAJOR_VER=`python3 --version 2>&1 | cut -d " " -f 2 | cut -d "." -f 2`;\
+	    if (( $$PY3_MAJOR_VER < 5 )); then\
+		echo "Couldn't find python3 in \$PATH that is >=3.5";\
+		echo "Please install python3.5 or later or explicity define the python3 executable name with \$PYTHON3";\
+	        echo "Exiting here";\
+	        exit 1;\
+	    else\
+		export PYTHON3="python3.$$PY3_MAJOR_VER";\
+	    fi;\
+	fi;\
+	echo "Python3 is ... $$PYTHON3";\
+	test -d venv || virtualenv --python=$$PYTHON3 venv;\
+	pip install -r requirements.txt;\
+	touch venv;\
 
 # Generate the Dockerfile from a Jinja2 template.
 dockerfile: venv templates/Dockerfile.j2
