@@ -7,8 +7,6 @@ services:
     container_name: elasticsearch1
     build:
       context: build/elasticsearch
-    cap_add:
-      - IPC_LOCK
     image: docker.elastic.co/elasticsearch/elasticsearch:{{ version_tag }}
     mem_limit: 4g
     networks:
@@ -19,9 +17,6 @@ services:
       memlock:
         soft: -1
         hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
     volumes:
       - esdata1:/usr/share/elasticsearch/data
 
@@ -29,8 +24,6 @@ services:
     container_name: elasticsearch2
     build:
       context: build/elasticsearch
-    cap_add:
-      - IPC_LOCK
     environment:
       - discovery.zen.ping.unicast.hosts=elasticsearch1
       - node.master=false
@@ -42,9 +35,6 @@ services:
       memlock:
         soft: -1
         hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
     volumes:
       - esdata2:/usr/share/elasticsearch/data
 

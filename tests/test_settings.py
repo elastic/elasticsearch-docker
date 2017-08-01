@@ -41,3 +41,12 @@ def test_envar_not_including_a_dot_is_not_presented_to_elasticsearch(elasticsear
 def test_capitalized_envvar_is_not_presented_to_elasticsearch(elasticsearch):
     # The fixture for this test comes from tests/docker-compose.yml
     assert 'NonESRelatedVariable' not in elasticsearch.es_cmdline()
+
+
+def test_setting_boostrap_memory_lock_with_an_environment_variable(elasticsearch):
+    # The fixture for this test comes from tests/docker-compose.yml
+    #
+    # When memory_lock=true ES bootstrap checks expect the memlock ulimit set to unlimited.
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration-memory.html#mlockall
+    for mlockall_node_value in elasticsearch.get_node_mlockall_state():
+        assert mlockall_node_value is True

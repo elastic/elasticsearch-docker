@@ -83,6 +83,12 @@ def elasticsearch(host):
             nodes = self.get('/_nodes/stats/jvm').json()['nodes'].values()
             return [node['jvm'] for node in nodes]
 
+        def get_node_mlockall_state(self):
+            """Return an array of the mlockall value"""
+            nodes = self.get('/_nodes?filter_path=**.mlockall').json()['nodes'].values()
+            return [node['process']['mlockall'] for node in nodes]
+
+        @retry(**retry_settings)
         def set_password(self, username, password):
             return self.put('/_xpack/security/user/%s/_password' % username,
                             json={"password": password})
