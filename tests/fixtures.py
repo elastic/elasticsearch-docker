@@ -2,7 +2,6 @@ from .conftest import pytest_configure, pytest_unconfigure
 from pytest import config, fixture
 from retrying import retry
 import requests
-import ipdb
 from requests import codes
 from requests.auth import HTTPBasicAuth
 from subprocess import run, PIPE
@@ -85,6 +84,11 @@ def elasticsearch(host):
             """Return an array of node JVM statistics"""
             nodes = self.get('/_nodes/stats/jvm').json()['nodes'].values()
             return [node['jvm'] for node in nodes]
+
+        def get_node_mlockall_state(self):
+            """Return an array of the mlockall value"""
+            nodes = self.get('/_nodes?filter_path=**.mlockall').json()['nodes'].values()
+            return [node['process']['mlockall'] for node in nodes]
 
         @retry(**retry_settings)
         def set_password(self, username, password):

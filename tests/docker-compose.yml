@@ -21,10 +21,12 @@ services:
       - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       # Env vars not followed by a dot, should not be parsed by the wrapper script.
       - irrelevantsetting=foo
-      # Capitalized or all-caps env vars should not be parsed either
+      # Capitalized or all-caps env vars should not be parsed either.
       - NonESRelatedVariable=bar
       # Enable Security audit logging so we can check the output for correctness.
       - xpack.security.audit.enabled=true
+      # Tell ES to use mlockall to prevent it from swapping out.
+      - bootstrap.memory_lock=true
     # Expose Elasticsearch to the host system, so that the test suite can see it.
     ports:
       - 9200:9200
@@ -40,3 +42,4 @@ services:
       - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       - irrelevantsetting=foo
       - NonESRelatedVariable=bar
+      - bootstrap.memory_lock=true

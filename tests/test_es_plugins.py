@@ -1,6 +1,5 @@
 from .fixtures import elasticsearch
 from requests import codes
-import pytest
 
 
 def test_uninstall_xpack_plugin(elasticsearch):
