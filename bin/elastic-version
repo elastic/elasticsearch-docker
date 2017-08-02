@@ -29,7 +29,7 @@ except KeyError:
 # If that's the case, our rev-parse attempt will simply resolve back to "HEAD".
 if branch == 'HEAD':
     # We will have to deduce the branch from which were detached.
-    match = re.search(r'HEAD detached at [^/]+/(\w*)', shell(['git', 'branch']))
+    match = re.search(r'HEAD detached at [^/]+/([\w.]*)', shell(['git', 'branch']))
     branch = match.group(1)
     # eg. "(HEAD detached at origin/master)"
     #                               ^^^^^^
