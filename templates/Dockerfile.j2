@@ -3,19 +3,14 @@
 {% set version_tag = elastic_version -%}
 {% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
 
-{% if release_manager and elastic_version.endswith('-SNAPSHOT') -%}
-{%   set url_root = 'http://localhost/build/snapshot-artifacts/elasticsearch/distribution/tar/build/distributions' -%}
-{%   set x_pack_url_root = 'http://localhost/build/snapshot-artifacts/x-pack-elasticsearch/plugin/build/distributions' -%}
-{%   set plugin_url_root = 'http://localhost/build/snapshot-artifacts/elasticsearch/plugins/$PLUGIN/build/distributions' -%}
-{% elif release_manager -%}
-{%   set url_root = 'http://localhost/build/release-artifacts/elasticsearch/distribution/tar/build/distributions' -%}
-{%   set x_pack_url_root = 'http://localhost/build/release-artifacts/x-pack-elasticsearch/plugin/build/distributions' -%}
-{%   set plugin_url_root = 'http://localhost/build/release-artifacts/elasticsearch/plugins/$PLUGIN/build/distributions' -%}
+{% if release_manager -%}
+{%   set url_root = 'http://localhost:8000/elasticsearch/distribution/tar/build/distributions' -%}
+{%   set x_pack_url_root = 'http://localhost:8000/x-pack-elasticsearch/plugin/build/distributions' -%}
+{%   set plugin_url_root = 'http://localhost:8000/elasticsearch/plugins' -%}
 {% elif staging_build_num -%}
 {%   set version_tag = version_tag + '-' + staging_build_num -%}
 {%   set url_root = 'https://staging.elastic.co/%s/downloads/elasticsearch' % version_tag -%}
 {% elif elastic_version.endswith('-SNAPSHOT') -%}
-{%   set version_tag = elastic_version -%}
 {%   set url_root = 'https://snapshots.elastic.co/downloads/elasticsearch' -%}
 {% else -%}
 {%   set url_root = 'https://artifacts.elastic.co/downloads/elasticsearch' -%}
@@ -48,7 +43,7 @@ RUN set -ex && for esdirs in config data logs; do \
 {% if release_manager -%}
 RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip" && \
     for PLUGIN in {{ ingest_plugins }}; do \
-      elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN-{{ elastic_version }}.zip"; \
+      elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN/build/distributions/$PLUGIN-{{ elastic_version }}.zip"; \
     done
 {% elif staging_build_num -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
