@@ -46,23 +46,36 @@ RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elasti
       elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN/build/distributions/$PLUGIN-{{ elastic_version }}.zip"; \
     done
 {% elif staging_build_num -%}
+  {% if 'oss' not in image_flavor -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
+  {% else -%}
+RUN for PLUGIN in {{ ingest_plugins }}; do \
+  {%- endif %}
       eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN"; \
     done
 {% elif elastic_version.endswith('-SNAPSHOT') -%}
-   COPY {{ base_xpack_path }}/x-pack-{{ elastic_version }}.zip /tmp/x-pack-{{ elastic_version }}.zip
-   RUN elasticsearch-plugin install file:///tmp/x-pack-{{ elastic_version }}.zip
+COPY {{ base_xpack_path }}/x-pack-{{ elastic_version }}.zip /tmp/x-pack-{{ elastic_version }}.zip
+RUN elasticsearch-plugin install file:///tmp/x-pack-{{ elastic_version }}.zip
 {% else -%}
+  {% if 'oss' not in image_flavor -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
+  {% else -%}
+RUN for PLUGIN in {{ ingest_plugins }}; do \
+  {%- endif %}
       elasticsearch-plugin install --batch "$PLUGIN"; \
     done
-{% endif-%}
+{%- endif %}
 
+{% if 'oss' not in image_flavor -%}
 COPY elasticsearch.yml certgen_instances.yml log4j2.properties config/
 COPY x-pack/log4j2.properties config/x-pack/
 COPY bin/es-docker bin/es-docker
-
+{% else -%}
+COPY elasticsearch.yml log4j2.properties config/
+COPY bin/es-docker bin/es-docker
+{% endif %}
 USER root
+
 RUN chown elasticsearch:elasticsearch \
       config/elasticsearch.yml \
       config/log4j2.properties \
@@ -72,7 +85,9 @@ RUN chown elasticsearch:elasticsearch \
 
 USER elasticsearch
 
+{% if image_flavor=='platinum' -%}
 RUN bin/x-pack/certgen -s -in config/certgen_instances.yml --out config/certs.zip && unzip -d config/x-pack/ config/certs.zip && rm config/certs.zip config/certgen_instances.yml
+{%- endif %}
 
 CMD ["/bin/bash", "bin/es-docker"]
 

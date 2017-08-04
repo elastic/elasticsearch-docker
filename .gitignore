@@ -5,4 +5,5 @@
 /venv
 /docker-compose.yml
 build/elasticsearch/Dockerfile
+build/elasticsearch/Dockerfile-*
 build/elasticsearch/elasticsearch*.tar.gz

@@ -11,6 +11,10 @@ else
 VERSION_TAG := $(ELASTIC_VERSION)
 endif
 
+# Build differeent images tagged as :version-<flavor>
+IMAGE_FLAVORS := oss basic platinum
+# Which image flavor will additionally receive the plain `:version` tag
+DEFAULT_IMAGE := basic
 ELASTIC_REGISTRY := docker.elastic.co
 VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
 
@@ -34,8 +38,12 @@ clean:
 	@if [ -f "docker-compose.yml" ]; then docker-compose down -v && docker-compose rm -f -v; fi
 	rm -f docker-compose.yml build/elasticsearch/Dockerfile
 
+
 pristine: clean
-	docker rmi -f $(VERSIONED_IMAGE)
+	-$(foreach flavor, $(IMAGE_FLAVORS), \
+	docker rmi -f $(VERSIONED_IMAGE)-$(flavor); \
+	)
+	-docker rmi -f $(VERSIONED_IMAGE)
 
 run: run-single
 
@@ -47,7 +55,9 @@ run-cluster: build docker-compose.yml
 
 # Build docker image: "elasticsearch:$(VERSION_TAG)"
 build: clean dockerfile
-	docker build -t $(VERSIONED_IMAGE) build/elasticsearch
+	-$(foreach flavor, $(IMAGE_FLAVORS), \
+	docker build -t $(VERSIONED_IMAGE)-$(flavor) build/elasticsearch/Dockerfile-$(flavor); \
+	)
 
 release-manager-snapshot: clean
 	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make dockerfile
@@ -80,14 +90,18 @@ venv: requirements.txt
 	pip install -r requirements.txt;\
 	touch venv;\
 
-# Generate the Dockerfile from a Jinja2 template.
+# Generate the Dockerfiles from a Jinja2 template.
 dockerfile: venv templates/Dockerfile.j2
-	jinja2 \
-	  -D elastic_version='$(ELASTIC_VERSION)' \
-	  -D staging_build_num='$(STAGING_BUILD_NUM)' \
-	  -D release_manager='$(RELEASE_MANAGER)' \
-	  -D base_xpack_path='$(BASE_XPACK_PATH)' \
-	  templates/Dockerfile.j2 > build/elasticsearch/Dockerfile
+	-$(foreach flavor, $(IMAGE_FLAVORS), \
+	  mkdir build/elasticsearch/Dockerfile-$(flavor); \
+	  jinja2 \
+	    -D elastic_version='$(ELASTIC_VERSION)' \
+	    -D staging_build_num='$(STAGING_BUILD_NUM)' \
+	    -D release_manager='$(RELEASE_MANAGER)' \
+	    -D base_xpack_path='$(BASE_XPACK_PATH)' \
+	    -D image_flavor='$(flavor)' \
+	    templates/Dockerfile.j2 > build/elasticsearch/Dockerfile-$(flavor)/Dockerfile; \
+	)
 
 # Generate the docker-compose.yml from a Jinja2 template.
 docker-compose.yml: venv templates/docker-compose.yml.j2
