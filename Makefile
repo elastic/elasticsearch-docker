@@ -50,12 +50,23 @@ build: clean dockerfile
 	docker build -t $(VERSIONED_IMAGE) build/elasticsearch
 
 release-manager-snapshot: clean
-	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make dockerfile
-	docker build --network=host -t $(VERSIONED_IMAGE)-SNAPSHOT build/elasticsearch
+	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make dockerfile
+	VERSIONED_IMAGE=$(VERSIONED_IMAGE)-SNAPSHOT make build-from-local-artifacts
 
 release-manager-release: clean
-	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION) make dockerfile
-	docker build --network=host -t $(VERSIONED_IMAGE) build/elasticsearch
+	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION) make dockerfile
+	make build-from-local-artifacts
+
+# Build from artifacts on the local filesystem, using an http server (running
+# in a container) to provide the artifacts to the Dockerfile.
+build-from-local-artifacts:
+	docker run --rm -d --name=elasticsearch-docker-artifact-server \
+	           --network=host -v $(ARTIFACTS_DIR):/mnt \
+	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	docker build --network=host -t $(VERSIONED_IMAGE) build/elasticsearch || \
+	  (docker kill elasticsearch-docker-artifact-server; false)
+	docker kill elasticsearch-docker-artifact-server
 
 # Push the image to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
@@ -85,7 +96,7 @@ dockerfile: venv templates/Dockerfile.j2
 	jinja2 \
 	  -D elastic_version='$(ELASTIC_VERSION)' \
 	  -D staging_build_num='$(STAGING_BUILD_NUM)' \
-	  -D release_manager='$(RELEASE_MANAGER)' \
+	  -D artifacts_dir='$(ARTIFACTS_DIR)' \
 	  -D base_xpack_path='$(BASE_XPACK_PATH)' \
 	  templates/Dockerfile.j2 > build/elasticsearch/Dockerfile
 

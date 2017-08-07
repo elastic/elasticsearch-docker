@@ -3,7 +3,7 @@
 {% set version_tag = elastic_version -%}
 {% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
 
-{% if release_manager -%}
+{% if artifacts_dir -%}
 {%   set url_root = 'http://localhost:8000/elasticsearch/distribution/tar/build/distributions' -%}
 {%   set x_pack_url_root = 'http://localhost:8000/x-pack-elasticsearch/plugin/build/distributions' -%}
 {%   set plugin_url_root = 'http://localhost:8000/elasticsearch/plugins' -%}
@@ -40,7 +40,7 @@ RUN set -ex && for esdirs in config data logs; do \
     done
 
 # Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
-{% if release_manager -%}
+{% if artifacts_dir -%}
 RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip" && \
     for PLUGIN in {{ ingest_plugins }}; do \
       elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN/build/distributions/$PLUGIN-{{ elastic_version }}.zip"; \
