@@ -2,18 +2,20 @@ SHELL=/bin/bash
 export PATH := ./bin:./venv/bin:$(PATH)
 
 ifndef ELASTIC_VERSION
-ELASTIC_VERSION := $(shell ./bin/elastic-version)
+  ELASTIC_VERSION := $(shell ./bin/elastic-version)
 endif
 
 ifdef STAGING_BUILD_NUM
-VERSION_TAG := $(ELASTIC_VERSION)-$(STAGING_BUILD_NUM)
+  VERSION_TAG := $(ELASTIC_VERSION)-$(STAGING_BUILD_NUM)
 else
-VERSION_TAG := $(ELASTIC_VERSION)
+  VERSION_TAG := $(ELASTIC_VERSION)
 endif
 
-# Build differeent images tagged as :version-<flavor>
+# Build different images tagged as :version-<flavor>
 ifndef IMAGE_FLAVORS
-IMAGE_FLAVORS := oss basic platinum
+  # basic license not available as of 6.0.0-beta1
+  # IMAGE_FLAVORS := oss basic platinum
+  IMAGE_FLAVORS := oss platinum
 endif
 
 # Which image flavor will additionally receive the plain `:version` tag
@@ -31,9 +33,10 @@ DOCKER_COMPOSE := docker-compose -f docker-compose.yml -f docker-compose.hostpor
 all: build test
 
 test: lint build docker-compose
-	$(foreach flavor, $(IMAGE_FLAVORS), \
-	./bin/pytest --image-flavor=$(flavor) tests; \
-	./bin/pytest --image-flavor=$(flavor) --single-node tests; \
+	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	pyfiglet -w 160 -f puffy "test: $(FLAVOR) image"; \
+	./bin/pytest --image-flavor=$(FLAVOR) tests; \
+	./bin/pytest --image-flavor=$(FLAVOR) --single-node tests; \
 	)
 
 lint: venv
@@ -42,14 +45,14 @@ lint: venv
 clean:
 	@if [ -f "docker-compose.yml" ]; then docker-compose down -v && docker-compose rm -f -v; fi
 	rm -f docker-compose.yml build/elasticsearch/Dockerfile
-	$(foreach flavor, $(IMAGE_FLAVORS), \
-	rm -f docker-compose-$(flavor).yml; \
-	rm -f build/elasticsearch/Dockerfile-$(flavor); \
+	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	rm -f docker-compose-$(FLAVOR).yml; \
+	rm -f build/elasticsearch/Dockerfile-$(FLAVOR); \
 	)
 
 pristine: clean
-	-$(foreach flavor, $(IMAGE_FLAVORS), \
-	docker rmi -f $(VERSIONED_IMAGE)-$(flavor); \
+	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	docker rmi -f $(VERSIONED_IMAGE)-$(FLAVOR); \
 	)
 	-docker rmi -f $(VERSIONED_IMAGE)
 
@@ -63,7 +66,7 @@ run-cluster: build docker-compose.yml
 
 # Build docker image: "elasticsearch:$(VERSION_TAG)-$(FLAVOR)"
 build: clean dockerfile
-	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	docker build -t $(VERSIONED_IMAGE)-$(FLAVOR) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch; \
 	)
 
@@ -100,7 +103,7 @@ venv: requirements.txt
 
 # Generate the Dockerfiles from a Jinja2 template.
 dockerfile: venv templates/Dockerfile.j2
-	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	 jinja2 \
 	   -D elastic_version='$(ELASTIC_VERSION)' \
 	   -D staging_build_num='$(STAGING_BUILD_NUM)' \
@@ -109,10 +112,14 @@ dockerfile: venv templates/Dockerfile.j2
 	   templates/Dockerfile.j2 > build/elasticsearch/Dockerfile-$(FLAVOR); \
 	)
 
-# Generate the docker-compose.yml from a Jinja2 template.
-docker-compose: venv templates/docker-compose.yml.j2
-	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+# Generate docker-compose and tests/docker-compose fragment files
+# for each image flavor from a Jinja2 template.
+docker-compose: venv templates/docker-compose.yml.j2 templates/docker-compose-fragment.yml.j2
+	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	 jinja2 \
 	  -D version_tag='$(VERSION_TAG)-$(FLAVOR)' \
 	  templates/docker-compose.yml.j2 > docker-compose-$(FLAVOR).yml; \
+	 jinja2 \
+	  -D image_flavor='$(FLAVOR)' \
+	  templates/docker-compose-fragment.yml.j2 > tests/docker-compose-$(FLAVOR).yml; \
 	)
