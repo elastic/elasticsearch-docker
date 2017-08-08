@@ -1,4 +1,6 @@
 SHELL=/bin/bash
+ELASTIC_REGISTRY := docker.elastic.co
+
 export PATH := ./bin:./venv/bin:$(PATH)
 
 ifndef ELASTIC_VERSION
@@ -23,8 +25,9 @@ ifndef DEFAULT_IMAGE_FLAVOR
   DEFAULT_IMAGE_FLAVOR := oss
 endif
 
-ELASTIC_REGISTRY := docker.elastic.co
-VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
+ifndef VERSIONED_IMAGE
+  VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
+endif
 
 # When invoking docker-compose, use an extra config fragment to map Elasticsearch's
 # listening port to the docker host.
@@ -39,12 +42,15 @@ else
 	-f docker-compose.hostports.yml
 endif
 
-.PHONY: all dockerfile docker-compose test lint clean pristine run run-single run-cluster build release-manager-snapshot push
+.PHONY: all dockerfile docker-compose test test-only lint clean pristine run run-single run-cluster build release-manager-snapshot push
 
 # Default target, build *and* run tests
 all: build test
 
-test: lint build docker-compose
+test: lint build docker-compose test-only
+
+# Test specified versions without building
+test-only: lint docker-compose
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	pyfiglet -w 160 -f puffy "test: $(FLAVOR) image"; \
 	./bin/pytest --image-flavor=$(FLAVOR) tests; \
@@ -86,12 +92,26 @@ build: clean dockerfile
 	)
 
 release-manager-snapshot: clean
-	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make dockerfile
-	docker build --network=host -t $(VERSIONED_IMAGE)-SNAPSHOT build/elasticsearch
+	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make dockerfile
+	VERSIONED_IMAGE=$(VERSIONED_IMAGE)-SNAPSHOT make build-from-local-artifacts test-only
 
 release-manager-release: clean
-	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION) make dockerfile
-	docker build --network=host -t $(VERSIONED_IMAGE) build/elasticsearch
+	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION) make dockerfile
+	make build-from-local-artifacts test-only
+
+# Build from artifacts on the local filesystem, using an http server (running
+# in a container) to provide the artifacts to the Dockerfile.
+build-from-local-artifacts:
+	docker run --rm -d --name=elasticsearch-docker-artifact-server \
+	           --network=host -v $(ARTIFACTS_DIR):/mnt \
+	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	pyfiglet -f puffy -w 160 "Building: $(VERSIONED_IMAGE)-$(FLAVOR)"; \
+	docker build --network=host -t $(VERSIONED_IMAGE)-$(FLAVOR) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch || \
+	(docker kill elasticsearch-docker-artifact-server; false); \
+	)
+	docker kill elasticsearch-docker-artifact-server
 
 # Push the images to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
@@ -135,13 +155,13 @@ venv: requirements.txt
 	pip install -r requirements.txt;\
 	touch venv;\
 
-# Generate the Dockerfiles from a Jinja2 template.
+# Generate the Dockerfiles for each image flavor from a Jinja2 template.
 dockerfile: venv templates/Dockerfile.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	 jinja2 \
 	   -D elastic_version='$(ELASTIC_VERSION)' \
 	   -D staging_build_num='$(STAGING_BUILD_NUM)' \
-	   -D release_manager='$(RELEASE_MANAGER)' \
+	   -D artifacts_dir='$(ARTIFACTS_DIR)' \
 	   -D image_flavor='$(FLAVOR)' \
 	   templates/Dockerfile.j2 > build/elasticsearch/Dockerfile-$(FLAVOR); \
 	)
