@@ -19,13 +19,25 @@ ifndef IMAGE_FLAVORS
 endif
 
 # Which image flavor will additionally receive the plain `:version` tag
-DEFAULT_IMAGE := basic
+ifndef DEFAULT_IMAGE_FLAVOR
+  DEFAULT_IMAGE_FLAVOR := oss
+endif
+
 ELASTIC_REGISTRY := docker.elastic.co
 VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
 
 # When invoking docker-compose, use an extra config fragment to map Elasticsearch's
 # listening port to the docker host.
-DOCKER_COMPOSE := docker-compose -f docker-compose.yml -f docker-compose.hostports.yml
+# For the x-pack security enabled image (platinum), use the fragment we utilize for tests.
+ifeq ($(DEFAULT_IMAGE_FLAVOR),platinum)
+  DOCKER_COMPOSE := docker-compose \
+	-f docker-compose-$(DEFAULT_IMAGE_FLAVOR).yml \
+	-f tests/docker-compose-$(DEFAULT_IMAGE_FLAVOR).yml
+else
+  DOCKER_COMPOSE := docker-compose \
+	-f docker-compose-$(DEFAULT_IMAGE_FLAVOR).yml \
+	-f docker-compose.hostports.yml
+endif
 
 .PHONY: all dockerfile docker-compose test lint clean pristine run run-single run-cluster build release-manager-snapshot push
 
@@ -43,10 +55,12 @@ lint: venv
 	flake8 tests
 
 clean:
-	@if [ -f "docker-compose.yml" ]; then docker-compose down -v && docker-compose rm -f -v; fi
-	rm -f docker-compose.yml build/elasticsearch/Dockerfile
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	if [[ -f "docker-compose-$(FLAVOR).yml" ]]; then \
+	  docker-compose -f docker-compose-$(FLAVOR).yml down && docker-compose -f docker-compose-$(FLAVOR).yml rm -f -v; \
+	fi; \
 	rm -f docker-compose-$(FLAVOR).yml; \
+	rm -f tests/docker-compose-$(FLAVOR).yml; \
 	rm -f build/elasticsearch/Dockerfile-$(FLAVOR); \
 	)
 
@@ -56,12 +70,13 @@ pristine: clean
 	)
 	-docker rmi -f $(VERSIONED_IMAGE)
 
+# Give us an easy way to start the DEFAULT_IMAGE_FLAVOR
 run: run-single
 
-run-single: build docker-compose.yml
+run-single: build docker-compose
 	$(DOCKER_COMPOSE) up elasticsearch1
 
-run-cluster: build docker-compose.yml
+run-cluster: build docker-compose
 	$(DOCKER_COMPOSE) up elasticsearch1 elasticsearch2
 
 # Build docker image: "elasticsearch:$(VERSION_TAG)-$(FLAVOR)"
@@ -78,9 +93,28 @@ release-manager-release: clean
 	RELEASE_MANAGER=true ELASTIC_VERSION=$(ELASTIC_VERSION) make dockerfile
 	docker build --network=host -t $(VERSIONED_IMAGE) build/elasticsearch
 
-# Push the image to the dedicated push endpoint at "push.docker.elastic.co"
+# Push the images to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
-	docker tag $(VERSIONED_IMAGE) push.$(VERSIONED_IMAGE)
+	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	docker tag $(VERSIONED_IMAGE)-$(FLAVOR) push.$(VERSIONED_IMAGE)-$(FLAVOR); \
+	echo; echo "Pushing $(VERSIONED_IMAGE)-$(FLAVOR)"; echo; \
+	docker push push.$(VERSIONED_IMAGE)-$(FLAVOR); \
+	docker rmi push.$(VERSIONED_IMAGE)-$(FLAVOR);\
+	)
+
+# Also push a plain versioned image based on DEFAULT_IMAGE_FLAVOR
+# e.g. elasticsearch-6.0.0 and elasticsearch-6.0.0-oss are the same.
+	@if [[ "$(IMAGE_FLAVORS)" != *"$(DEFAULT_IMAGE_FLAVOR)"* ]]; then\
+	  echo;\
+	  echo "I can't tag and push $(VERSIONED_IMAGE)";\
+	  echo "because you didn't build the \"$(DEFAULT_IMAGE_FLAVOR)\" image (check your \$$IMAGE_FLAVORS).";\
+	  echo;\
+	  echo "Failing here.";\
+	  echo;\
+	  exit 1;\
+	fi
+	docker tag $(VERSIONED_IMAGE)-$(DEFAULT_IMAGE_FLAVOR) push.$(VERSIONED_IMAGE)
+	echo; echo "Pushing $(VERSIONED_IMAGE)"; echo; \
 	docker push push.$(VERSIONED_IMAGE)
 	docker rmi push.$(VERSIONED_IMAGE)
 
