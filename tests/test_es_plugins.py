@@ -1,7 +1,12 @@
 from .fixtures import elasticsearch
+import pytest
 from requests import codes
 
+image_flavor = pytest.config.getoption('--image-flavor')
 
+
+@pytest.mark.skipif('oss' in image_flavor,
+                    reason="x-pack not installed in the -{} image.".format(image_flavor))
 def test_uninstall_xpack_plugin(elasticsearch):
     # Ensure plugins can be uninstalled, see https://github.com/elastic/elasticsearch/issues/24231
     assert elasticsearch.uninstall_plugin("x-pack").exit_status == 0

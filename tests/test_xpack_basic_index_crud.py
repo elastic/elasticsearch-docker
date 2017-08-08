@@ -1,7 +1,12 @@
 from .fixtures import elasticsearch
 from requests import codes
+import pytest
+
+image_flavor = pytest.config.getoption('--image-flavor')
 
 
+@pytest.mark.skipif('platinum' not in image_flavor,
+                    reason="x-pack security not installed in the -{} image.".format(image_flavor))
 def test_bootstrap_password_change(elasticsearch):
     try:
         elasticsearch.set_password('elastic', 'thenewpassword')

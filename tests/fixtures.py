@@ -23,7 +23,10 @@ def elasticsearch(host):
 
         def __init__(self):
             self.url = 'http://localhost:9200'
-            self.auth = HTTPBasicAuth('elastic', Elasticsearch.bootstrap_pwd)
+            if config.getoption('--image-flavor') == 'platinum':
+                self.auth = HTTPBasicAuth('elastic', Elasticsearch.bootstrap_pwd)
+            else:
+                self.auth = ''
 
             self.assert_healthy()
 
