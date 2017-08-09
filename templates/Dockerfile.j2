@@ -1,4 +1,4 @@
-# This Dockerfile was generated from templates/Dockerfile.j2
+# This Dockerfile was generated from the template at templates/Dockerfile.j2
 {% set ingest_plugins = 'ingest-user-agent ingest-geoip' %}
 {% set version_tag = elastic_version -%}
 {% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
@@ -41,38 +41,80 @@ RUN set -ex && for esdirs in config data logs; do \
 
 # Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
 {% if artifacts_dir -%}
-RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip" && \
-    for PLUGIN in {{ ingest_plugins }}; do \
+  {% if image_flavor != 'oss' -%}
+RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip"
+  {%- endif %}
+RUN for PLUGIN in {{ ingest_plugins }}; do \
       elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN/build/distributions/$PLUGIN-{{ elastic_version }}.zip"; \
     done
 {% elif staging_build_num -%}
+  {% if image_flavor != 'oss' -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
+  {% else -%}
+RUN for PLUGIN in {{ ingest_plugins }}; do \
+  {%- endif %}
       eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN"; \
     done
-{% elif elastic_version.endswith('-SNAPSHOT') -%}
-   COPY {{ base_xpack_path }}/x-pack-{{ elastic_version }}.zip /tmp/x-pack-{{ elastic_version }}.zip
-   RUN elasticsearch-plugin install file:///tmp/x-pack-{{ elastic_version }}.zip
 {% else -%}
+  {% if image_flavor != 'oss' -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
+  {% else -%}
+RUN for PLUGIN in {{ ingest_plugins }}; do \
+  {%- endif %}
       elasticsearch-plugin install --batch "$PLUGIN"; \
     done
-{% endif-%}
+{%- endif %}
 
-COPY elasticsearch.yml certgen_instances.yml log4j2.properties config/
+USER root
+
+{# A fair bit of duplication here, but making line breaks and '\' consistent
+   coupled with jinja2 conditionals is complicated.
+-#}
+
+{% if image_flavor == 'oss' -%}
+COPY elasticsearch.yml log4j2.properties config/
+COPY bin/es-docker bin/es-docker
+
+RUN chown elasticsearch:elasticsearch \
+      config/elasticsearch.yml \
+      config/log4j2.properties \
+      bin/es-docker && \
+    chmod 0750 bin/es-docker
+{% elif image_flavor == 'basic' -%}
+COPY elasticsearch.yml log4j2.properties config/
 COPY x-pack/log4j2.properties config/x-pack/
 COPY bin/es-docker bin/es-docker
 
-USER root
+# Note: basic will be available after 6.0.0-beta1
+RUN echo 'xpack.license.self_generated.type: basic' >>config/elasticsearch.yml
+
 RUN chown elasticsearch:elasticsearch \
       config/elasticsearch.yml \
       config/log4j2.properties \
       config/x-pack/log4j2.properties \
       bin/es-docker && \
     chmod 0750 bin/es-docker
+{% elif image_flavor == 'platinum' -%}
+COPY elasticsearch.yml certgen_instances.yml log4j2.properties config/
+COPY x-pack/log4j2.properties config/x-pack/
+COPY bin/es-docker bin/es-docker
+
+RUN echo 'xpack.license.self_generated.type: trial' >>config/elasticsearch.yml
+
+RUN chown elasticsearch:elasticsearch \
+      config/certgen_instances.yml \
+      config/elasticsearch.yml \
+      config/log4j2.properties \
+      config/x-pack/log4j2.properties \
+      bin/es-docker && \
+    chmod 0750 bin/es-docker
+{% endif -%}
 
 USER elasticsearch
 
+{% if image_flavor == 'platinum' -%}
 RUN bin/x-pack/certgen -s -in config/certgen_instances.yml --out config/certs.zip && unzip -d config/x-pack/ config/certs.zip && rm config/certs.zip config/certgen_instances.yml
+{% endif -%}
 
 CMD ["/bin/bash", "bin/es-docker"]
 

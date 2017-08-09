@@ -1,4 +1,5 @@
-# This docker-compose fragment file provides settings that are specific to
+# This file was generated from the template at templates/docker-compose-fragment.yml.j2
+# The docker-compose fragment file provides settings that are specific to
 # running the test suite. Some of the settings are useful as "canaries", for
 # making assertions about the configuration.
 ---
@@ -8,10 +9,16 @@ services:
     # Let Testinfra infer the container name by making the hostname the same.
     hostname: elasticsearch1
     environment:
+      {% if image_flavor == 'platinum' -%}
       # Specify the bootstrap password for elastic user.
       - ELASTIC_PASSWORD=pleasechangeme
       # Let us use the (insecure) prebundled TLS certs through a flag.
       - ALLOW_INSECURE_DEFAULT_TLS_CERT=true
+      {% endif -%}
+      {% if 'oss' not in image_flavor -%}
+      # Enable Security audit logging so we can check the output for correctness.
+      - xpack.security.audit.enabled=true
+      {% endif -%}
       # Try setting a few options with environment variables.
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-1
@@ -23,8 +30,6 @@ services:
       - irrelevantsetting=foo
       # Capitalized or all-caps env vars should not be parsed either.
       - NonESRelatedVariable=bar
-      # Enable Security audit logging so we can check the output for correctness.
-      - xpack.security.audit.enabled=true
       # Tell ES to use mlockall to prevent it from swapping out.
       - bootstrap.memory_lock=true
     # Expose Elasticsearch to the host system, so that the test suite can see it.
@@ -34,8 +39,13 @@ services:
   elasticsearch2:
     hostname: elasticsearch2
     environment:
+      {% if image_flavor == 'platinum' -%}
       - ELASTIC_PASSWORD=pleasechangeme
       - ALLOW_INSECURE_DEFAULT_TLS_CERT=true
+      {% endif -%}
+      {% if 'oss' not in image_flavor -%}
+      - xpack.security.audit.enabled=true
+      {% endif -%}
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2
       - thread_pool.bulk.queue_size=500

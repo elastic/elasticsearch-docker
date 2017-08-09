@@ -23,7 +23,10 @@ def elasticsearch(host):
 
         def __init__(self):
             self.url = 'http://localhost:9200'
-            self.auth = HTTPBasicAuth('elastic', Elasticsearch.bootstrap_pwd)
+            if config.getoption('--image-flavor') == 'platinum':
+                self.auth = HTTPBasicAuth('elastic', Elasticsearch.bootstrap_pwd)
+            else:
+                self.auth = ''
 
             self.assert_healthy()
 
@@ -151,7 +154,12 @@ def elasticsearch(host):
             return host.run('hostname').stdout.strip()
 
         def get_docker_log(self):
-            proc = run(['docker-compose', 'logs', self.get_hostname()], stdout=PIPE)
+            proc = run(['docker-compose',
+                        '-f',
+                        'docker-compose-{}.yml'.format(config.getoption('--image-flavor')),
+                        'logs',
+                        self.get_hostname()],
+                       stdout=PIPE)
             return proc.stdout.decode()
 
         def assert_in_docker_log(self, string):
