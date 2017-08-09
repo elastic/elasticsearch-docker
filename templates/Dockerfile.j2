@@ -41,7 +41,7 @@ RUN set -ex && for esdirs in config data logs; do \
 
 # Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
 {% if artifacts_dir -%}
-  {% if image_flavor != 'oss '-%}
+  {% if image_flavor != 'oss' -%}
 RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip"
   {%- endif %}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
