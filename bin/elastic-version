@@ -34,7 +34,11 @@ if branch == 'HEAD':
     # eg. "(HEAD detached at origin/master)"
     #                               ^^^^^^
 
-elastic_version = version_map['branches'][branch]
+try:
+    elastic_version = version_map['branches'][branch]
+except KeyError:
+    # Unknown branch, assume it is a fork of master.
+    elastic_version = version_map['branches']['master']
 
 
 if __name__ == '__main__':
