@@ -58,7 +58,6 @@ test: lint docker-compose
 # Build and test
 test-build: lint build docker-compose
 
-
 lint: venv
 	flake8 tests
 
@@ -90,6 +89,7 @@ run-cluster: build docker-compose
 # Build docker image: "elasticsearch:$(VERSION_TAG)-$(FLAVOR)"
 build: clean dockerfile
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
+	pyfiglet -f puffy -w 160 "Building: $(ELASTIC_VERSION)-$(FLAVOR)"; \
 	docker build -t $(VERSIONED_IMAGE)-$(FLAVOR) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch; \
 	)
 
