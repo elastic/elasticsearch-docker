@@ -3,9 +3,7 @@ ELASTIC_REGISTRY := docker.elastic.co
 
 export PATH := ./bin:./venv/bin:$(PATH)
 
-ifndef ELASTIC_VERSION
-  ELASTIC_VERSION := $(shell ./bin/elastic-version)
-endif
+ELASTIC_VERSION ?= $(shell ./bin/elastic-version)
 
 ifdef STAGING_BUILD_NUM
   VERSION_TAG := $(ELASTIC_VERSION)-$(STAGING_BUILD_NUM)
@@ -14,20 +12,14 @@ else
 endif
 
 # Build different images tagged as :version-<flavor>
-ifndef IMAGE_FLAVORS
-  # basic license not available as of 6.0.0-beta1
-  # IMAGE_FLAVORS := oss basic platinum
-  IMAGE_FLAVORS := oss platinum
-endif
+# FIXME: basic license not available as of 6.0.0-beta1
+# IMAGE_FLAVORS ?= oss basic platinum
+IMAGE_FLAVORS ?= oss platinum
 
 # Which image flavor will additionally receive the plain `:version` tag
-ifndef DEFAULT_IMAGE_FLAVOR
-  DEFAULT_IMAGE_FLAVOR := oss
-endif
+DEFAULT_IMAGE_FLAVOR ?= oss
 
-ifndef VERSIONED_IMAGE
-  VERSIONED_IMAGE := $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
-endif
+VERSIONED_IMAGE ?= $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
 
 # When invoking docker-compose, use an extra config fragment to map Elasticsearch's
 # listening port to the docker host.
