@@ -41,14 +41,14 @@ RUN set -ex && for esdirs in config data logs; do \
 
 # Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
 {% if artifacts_dir -%}
-  {% if 'oss' not in image_flavor -%}
+  {% if image_flavor != 'oss '-%}
 RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip"
   {%- endif %}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
       elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN/build/distributions/$PLUGIN-{{ elastic_version }}.zip"; \
     done
 {% elif staging_build_num -%}
-  {% if 'oss' not in image_flavor -%}
+  {% if image_flavor != 'oss' -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
   {% else -%}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
@@ -56,7 +56,7 @@ RUN for PLUGIN in {{ ingest_plugins }}; do \
       eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN"; \
     done
 {% else -%}
-  {% if 'oss' not in image_flavor -%}
+  {% if image_flavor != 'oss' -%}
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
   {% else -%}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
@@ -71,7 +71,7 @@ USER root
    coupled with jinja2 conditionals is complicated.
 -#}
 
-{% if 'oss' in image_flavor -%}
+{% if image_flavor == 'oss' -%}
 COPY elasticsearch.yml log4j2.properties config/
 COPY bin/es-docker bin/es-docker
 
@@ -80,7 +80,7 @@ RUN chown elasticsearch:elasticsearch \
       config/log4j2.properties \
       bin/es-docker && \
     chmod 0750 bin/es-docker
-{% elif 'basic' in image_flavor -%}
+{% elif image_flavor == 'basic' -%}
 COPY elasticsearch.yml log4j2.properties config/
 COPY x-pack/log4j2.properties config/x-pack/
 COPY bin/es-docker bin/es-docker
@@ -94,7 +94,7 @@ RUN chown elasticsearch:elasticsearch \
       config/x-pack/log4j2.properties \
       bin/es-docker && \
     chmod 0750 bin/es-docker
-{% elif 'platinum' in image_flavor -%}
+{% elif image_flavor == 'platinum' -%}
 COPY elasticsearch.yml certgen_instances.yml log4j2.properties config/
 COPY x-pack/log4j2.properties config/x-pack/
 COPY bin/es-docker bin/es-docker
@@ -112,7 +112,7 @@ RUN chown elasticsearch:elasticsearch \
 
 USER elasticsearch
 
-{% if image_flavor=='platinum' -%}
+{% if image_flavor == 'platinum' -%}
 RUN bin/x-pack/certgen -s -in config/certgen_instances.yml --out config/certs.zip && unzip -d config/x-pack/ config/certs.zip && rm config/certs.zip config/certgen_instances.yml
 {% endif -%}
 
