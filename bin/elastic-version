@@ -17,29 +17,34 @@ def shell(cmd):
     return run(cmd, stdout=PIPE).stdout.decode().strip()
 
 
-# Some environments, particularly Jenkins, set $GIT_BRANCH. Honour it.
-try:
-    branch = environ['GIT_BRANCH'].lstrip('origin/')
-# If $GIT_BRANCH isn't set, ask 'git' what branch we are on.
-except KeyError:
-    branch = shell(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+def find_version_by_git_branch():
+    # Some environments, particularly Jenkins, set $GIT_BRANCH. Honour it.
+    try:
+        branch = environ['GIT_BRANCH'].lstrip('origin/')
+    # If $GIT_BRANCH isn't set, ask 'git' what branch we are on.
+    except KeyError:
+        branch = shell(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
 
-# Running "git rev-parse --abbrev-ref HEAD" will resolve to a branch name if
-# we are on a branch, but it's possible that we are in a "detached head state".
-# If that's the case, our rev-parse attempt will simply resolve back to "HEAD".
-if branch == 'HEAD':
-    # We will have to deduce the branch from which were detached.
-    match = re.search(r'HEAD detached at [^/]+/([\w.]*)', shell(['git', 'branch']))
-    branch = match.group(1)
-    # eg. "(HEAD detached at origin/master)"
-    #                               ^^^^^^
+    # Running "git rev-parse --abbrev-ref HEAD" will resolve to a branch name if
+    # we are on a branch, but it's possible that we are in a "detached head state".
+    # If that's the case, our rev-parse attempt will simply resolve back to "HEAD".
+    if branch == 'HEAD':
+        # We will have to deduce the branch from which we were detached.
+        match = re.search(r'HEAD detached at [^/]+/([\w.]*)', shell(['git', 'branch']))
+        branch = match.group(1)
+        # eg. "(HEAD detached at origin/master)"
+        #                               ^^^^^^
 
-try:
-    elastic_version = version_map['branches'][branch]
-except KeyError:
-    # Unknown branch, assume it is a fork of master.
-    elastic_version = version_map['branches']['master']
+    try:
+        return version_map['branches'][branch]
+    except KeyError:
+        # Unknown branch, assume it is a fork of master.
+        return version_map['branches']['master']
 
 
 if __name__ == '__main__':
-    print(elastic_version)
+    if 'ELASTIC_VERSION' in environ:
+        # Then the user has forced the version. Do as they say!
+        print(environ['ELASTIC_VERSION'])
+    else:
+        print(find_version_by_git_branch())
