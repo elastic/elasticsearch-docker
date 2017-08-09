@@ -5,7 +5,7 @@ from requests import codes
 image_flavor = pytest.config.getoption('--image-flavor')
 
 
-@pytest.mark.skipif('oss' in image_flavor,
+@pytest.mark.skipif(image_flavor == 'oss',
                     reason="x-pack not installed in the -{} image.".format(image_flavor))
 def test_uninstall_xpack_plugin(elasticsearch):
     # Ensure plugins can be uninstalled, see https://github.com/elastic/elasticsearch/issues/24231
