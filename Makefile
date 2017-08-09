@@ -42,20 +42,22 @@ else
 	-f docker-compose.hostports.yml
 endif
 
-.PHONY: all dockerfile docker-compose test test-only lint clean pristine run run-single run-cluster build release-manager-snapshot push
+.PHONY: all dockerfile docker-compose test test-build lint clean pristine run run-single run-cluster build release-manager release-manager-snapshot push
 
 # Default target, build *and* run tests
 all: build test
 
-test: lint build docker-compose test-only
-
 # Test specified versions without building
-test-only: lint docker-compose
+test: lint docker-compose
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	pyfiglet -w 160 -f puffy "test: $(FLAVOR) image"; \
 	./bin/pytest --image-flavor=$(FLAVOR) tests; \
 	./bin/pytest --image-flavor=$(FLAVOR) --single-node tests; \
 	)
+
+# Build and test
+test-build: lint build docker-compose
+
 
 lint: venv
 	flake8 tests
@@ -92,22 +94,20 @@ build: clean dockerfile
 	)
 
 release-manager-snapshot: clean
-	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make dockerfile
-	VERSIONED_IMAGE=$(VERSIONED_IMAGE)-SNAPSHOT make build-from-local-artifacts test-only
+	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make build-from-local-artifacts
 
 release-manager-release: clean
-	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION) make dockerfile
-	make build-from-local-artifacts test-only
+	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION) make build-from-local-artifacts
 
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-artifacts:
+build-from-local-artifacts: dockerfile
 	docker run --rm -d --name=elasticsearch-docker-artifact-server \
 	           --network=host -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	pyfiglet -f puffy -w 160 "Building: $(VERSIONED_IMAGE)-$(FLAVOR)"; \
+	pyfiglet -f puffy -w 160 "Building: $(ELASTIC_VERSION)-$(FLAVOR)"; \
 	docker build --network=host -t $(VERSIONED_IMAGE)-$(FLAVOR) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch || \
 	(docker kill elasticsearch-docker-artifact-server; false); \
 	)
