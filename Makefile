@@ -13,12 +13,10 @@ else
 endif
 
 # Build different images tagged as :version-<flavor>
-# FIXME: basic license not available as of 6.0.0-beta1
-# IMAGE_FLAVORS ?= oss basic platinum
-IMAGE_FLAVORS ?= oss platinum
+IMAGE_FLAVORS ?= basic platinum
 
 # Which image flavor will additionally receive the plain `:version` tag
-DEFAULT_IMAGE_FLAVOR ?= oss
+DEFAULT_IMAGE_FLAVOR ?= basic
 
 VERSIONED_IMAGE ?= $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
 
