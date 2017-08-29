@@ -6,7 +6,7 @@ services:
     container_name: elasticsearch1
     build:
       context: build/elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:{{ version_tag }}
+    image: docker.elastic.co/elasticsearch/elasticsearch-{{ image_flavor }}:{{ version_tag }}
     mem_limit: 4g
     networks:
       esnet:
@@ -26,7 +26,7 @@ services:
     environment:
       - discovery.zen.ping.unicast.hosts=elasticsearch1
       - node.master=false
-    image: docker.elastic.co/elasticsearch/elasticsearch:{{ version_tag }}
+    image: docker.elastic.co/elasticsearch/elasticsearch-{{ image_flavor }}:{{ version_tag }}
     mem_limit: 4g
     networks:
       - esnet

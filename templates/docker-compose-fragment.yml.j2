@@ -15,7 +15,7 @@ services:
       # Let us use the (insecure) prebundled TLS certs through a flag.
       - ALLOW_INSECURE_DEFAULT_TLS_CERT=true
       {% endif -%}
-      {% if 'oss' not in image_flavor -%}
+      {% if image_flavor == 'platinum' -%}
       # Enable Security audit logging so we can check the output for correctness.
       - xpack.security.audit.enabled=true
       {% endif -%}
@@ -43,7 +43,7 @@ services:
       - ELASTIC_PASSWORD=pleasechangeme
       - ALLOW_INSECURE_DEFAULT_TLS_CERT=true
       {% endif -%}
-      {% if 'oss' not in image_flavor -%}
+      {% if image_flavor == 'platinum' -%}
       - xpack.security.audit.enabled=true
       {% endif -%}
       - cluster.name=docker-test-cluster

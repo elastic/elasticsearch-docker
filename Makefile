@@ -18,7 +18,7 @@ IMAGE_FLAVORS ?= basic platinum
 # Which image flavor will additionally receive the plain `:version` tag
 DEFAULT_IMAGE_FLAVOR ?= basic
 
-VERSIONED_IMAGE ?= $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch:$(VERSION_TAG)
+IMAGE_TAG ?= $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch
 
 # When invoking docker-compose, use an extra config fragment to map Elasticsearch's
 # listening port to the docker host.
@@ -64,9 +64,9 @@ clean:
 
 pristine: clean
 	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	docker rmi -f $(VERSIONED_IMAGE)-$(FLAVOR); \
+	docker rmi -f $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
 	)
-	-docker rmi -f $(VERSIONED_IMAGE)
+	-docker rmi -f $(IMAGE_TAG):$(VERSION_TAG)
 
 # Give us an easy way to start the DEFAULT_IMAGE_FLAVOR
 run: run-single
@@ -77,11 +77,11 @@ run-single: build docker-compose
 run-cluster: build docker-compose
 	$(DOCKER_COMPOSE) up elasticsearch1 elasticsearch2
 
-# Build docker image: "elasticsearch:$(VERSION_TAG)-$(FLAVOR)"
+# Build docker image: "elasticsearch-$(FLAVOR):$(VERSION_TAG)"
 build: clean dockerfile
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	pyfiglet -f puffy -w 160 "Building: $(ELASTIC_VERSION)-$(FLAVOR)"; \
-	docker build -t $(VERSIONED_IMAGE)-$(FLAVOR) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch; \
+	pyfiglet -f puffy -w 160 "Building: $(FLAVOR)"; \
+	docker build -t $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch; \
 	)
 
 release-manager-snapshot: clean
@@ -92,14 +92,14 @@ release-manager-release: clean
 
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-artifacts: dockerfile
+build-from-local-artifacts: venv dockerfile docker-compose
 	docker run --rm -d --name=elasticsearch-docker-artifact-server \
 	           --network=host -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	-$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	pyfiglet -f puffy -w 160 "Building: $(ELASTIC_VERSION)-$(FLAVOR)"; \
-	docker build --network=host -t $(VERSIONED_IMAGE)-$(FLAVOR) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch || \
+	pyfiglet -f puffy -w 160 "Building: $(FLAVOR)"; \
+	docker build --network=host -t $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch || \
 	(docker kill elasticsearch-docker-artifact-server; false); \
 	)
 	docker kill elasticsearch-docker-artifact-server
@@ -107,10 +107,10 @@ build-from-local-artifacts: dockerfile
 # Push the images to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	docker tag $(VERSIONED_IMAGE)-$(FLAVOR) push.$(VERSIONED_IMAGE)-$(FLAVOR); \
-	echo; echo "Pushing $(VERSIONED_IMAGE)-$(FLAVOR)"; echo; \
-	docker push push.$(VERSIONED_IMAGE)-$(FLAVOR); \
-	docker rmi push.$(VERSIONED_IMAGE)-$(FLAVOR);\
+	docker tag $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
+	echo; echo "Pushing $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)"; echo; \
+	docker push push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
+	docker rmi push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
 	)
 
 # Also push a plain versioned image based on DEFAULT_IMAGE_FLAVOR
@@ -124,10 +124,10 @@ push: test
 	  echo;\
 	  exit 1;\
 	fi
-	docker tag $(VERSIONED_IMAGE)-$(DEFAULT_IMAGE_FLAVOR) push.$(VERSIONED_IMAGE)
-	echo; echo "Pushing $(VERSIONED_IMAGE)"; echo; \
-	docker push push.$(VERSIONED_IMAGE)
-	docker rmi push.$(VERSIONED_IMAGE)
+	docker tag $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)
+	echo; echo "Pushing $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)"; echo;
+	docker push push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)
+	docker rmi push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)
 
 # The tests are written in Python. Make a virtualenv to handle the dependencies.
 venv: requirements.txt
@@ -162,7 +162,8 @@ dockerfile: venv templates/Dockerfile.j2
 docker-compose: venv templates/docker-compose.yml.j2 templates/docker-compose-fragment.yml.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	 jinja2 \
-	  -D version_tag='$(VERSION_TAG)-$(FLAVOR)' \
+	  -D version_tag='$(VERSION_TAG)' \
+	  -D image_flavor='$(FLAVOR)' \
 	  templates/docker-compose.yml.j2 > docker-compose-$(FLAVOR).yml; \
 	 jinja2 \
 	  -D image_flavor='$(FLAVOR)' \
