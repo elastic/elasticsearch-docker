@@ -80,9 +80,13 @@ run-cluster: build docker-compose
 # Build docker image: "elasticsearch-$(FLAVOR):$(VERSION_TAG)"
 build: clean dockerfile
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	pyfiglet -f puffy -w 160 "Building: $(FLAVOR)"; \
-	docker build -t $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch; \
+	  pyfiglet -f puffy -w 160 "Building: $(FLAVOR)"; \
+	  docker build -t $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) -f build/elasticsearch/Dockerfile-$(FLAVOR) build/elasticsearch; \
+	  if [[ $(FLAVOR) == $(DEFAULT_IMAGE_FLAVOR) ]]; then \
+	    docker tag $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG); \
+	  fi; \
 	)
+
 
 release-manager-snapshot: clean
 	ARTIFACTS_DIR=$(ARTIFACTS_DIR) ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make build-from-local-artifacts
@@ -113,9 +117,9 @@ push: test
 	docker rmi push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
 	)
 
-# Also push a plain versioned image based on DEFAULT_IMAGE_FLAVOR
-# e.g. elasticsearch-6.0.0 and elasticsearch-6.0.0-oss are the same.
-	@if [[ "$(IMAGE_FLAVORS)" != *"$(DEFAULT_IMAGE_FLAVOR)"* ]]; then\
+# Also push the plain named image based on DEFAULT_IMAGE_FLAVOR
+# e.g. elasticsearch-basic:6.0.0 and elasticsearch:6.0.0 are the same.
+	@if [[ -z $$(docker images -q docker.elastic.co/elasticsearch/elasticsearch-basic) ]];; then\
 	  echo;\
 	  echo "I can't tag and push $(VERSIONED_IMAGE)";\
 	  echo "because you didn't build the \"$(DEFAULT_IMAGE_FLAVOR)\" image (check your \$$IMAGE_FLAVORS).";\
@@ -123,11 +127,12 @@ push: test
 	  echo "Failing here.";\
 	  echo;\
 	  exit 1;\
-	fi
-	docker tag $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG) push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)
-	echo; echo "Pushing $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)"; echo;
-	docker push push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)
-	docker rmi push.$(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG)
+        fi
+
+	docker tag $(IMAGE_TAG):$(VERSION_TAG) push.$(IMAGE_TAG):$(VERSION_TAG)
+	echo; echo "Pushing $(IMAGE_TAG):$(VERSION_TAG)"; echo;
+	docker push push.$(IMAGE_TAG):$(VERSION_TAG)
+	docker rmi push.$(IMAGE_TAG):$(VERSION_TAG)
 
 # The tests are written in Python. Make a virtualenv to handle the dependencies.
 venv: requirements.txt
