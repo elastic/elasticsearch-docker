@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-ELASTIC_REGISTRY := docker.elastic.co
+ELASTIC_REGISTRY ?= docker.elastic.co
 
 export PATH := ./bin:./venv/bin:$(PATH)
 
@@ -162,6 +162,7 @@ dockerfile: venv templates/Dockerfile.j2
 docker-compose: venv templates/docker-compose.yml.j2 templates/docker-compose-fragment.yml.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 	 jinja2 \
+	  -D elastic_registry='$(ELASTIC_REGISTRY)' \
 	  -D version_tag='$(VERSION_TAG)' \
 	  -D image_flavor='$(FLAVOR)' \
 	  templates/docker-compose.yml.j2 > docker-compose-$(FLAVOR).yml; \
