@@ -32,6 +32,8 @@ services:
       - NonESRelatedVariable=bar
       # Tell ES to use mlockall to prevent it from swapping out.
       - bootstrap.memory_lock=true
+      # Avoid test failures due to small disks.
+      - cluster.routing.allocation.disk.threshold_enabled=false
     # Expose Elasticsearch to the host system, so that the test suite can see it.
     ports:
       - 9200:9200
@@ -53,3 +55,4 @@ services:
       - irrelevantsetting=foo
       - NonESRelatedVariable=bar
       - bootstrap.memory_lock=true
+      - cluster.routing.allocation.disk.threshold_enabled=false
