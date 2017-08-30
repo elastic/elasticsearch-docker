@@ -41,9 +41,10 @@ all: build test
 # Test specified versions without building
 test: lint docker-compose
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-	pyfiglet -w 160 -f puffy "test: $(FLAVOR) image"; \
-	./bin/pytest --image-flavor=$(FLAVOR) tests; \
-	./bin/pytest --image-flavor=$(FLAVOR) --single-node tests; \
+	  pyfiglet -w 160 -f puffy "test: $(FLAVOR) single"; \
+	  ./bin/pytest --image-flavor=$(FLAVOR) --single-node tests; \
+	  pyfiglet -w 160 -f puffy "test: $(FLAVOR) multi"; \
+	  ./bin/pytest --image-flavor=$(FLAVOR) tests; \
 	)
 
 # Build and test
