@@ -120,10 +120,10 @@ push: test
 
 # Also push the plain named image based on DEFAULT_IMAGE_FLAVOR
 # e.g. elasticsearch-basic:6.0.0 and elasticsearch:6.0.0 are the same.
-	@if [[ -z $$(docker images -q docker.elastic.co/elasticsearch/elasticsearch-basic) ]];; then\
+	@if [[ -z "$$(docker images -q $(IMAGE_TAG):$(VERSION_TAG))" ]]; then\
 	  echo;\
-	  echo "I can't tag and push $(VERSIONED_IMAGE)";\
-	  echo "because you didn't build the \"$(DEFAULT_IMAGE_FLAVOR)\" image (check your \$$IMAGE_FLAVORS).";\
+	  echo "I can't push $(IMAGE_TAG):$(VERSION_TAG)";\
+	  echo "probably because you didn't build the \"$(DEFAULT_IMAGE_FLAVOR)\" image (check your \$$IMAGE_FLAVORS).";\
 	  echo;\
 	  echo "Failing here.";\
 	  echo;\
