@@ -2,6 +2,7 @@
 {% set ingest_plugins = 'ingest-user-agent ingest-geoip' %}
 {% set version_tag = elastic_version -%}
 {% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
+{% set java_rpm = 'java-1.8.0-openjdk-headless-1.8.0.141-2.b16.el7_4.x86_64.rpm' -%}
 
 {% if release_manager and elastic_version.endswith('-SNAPSHOT') -%}
 {%   set url_root = 'http://localhost/build/snapshot-artifacts/elasticsearch/distribution/tar/build/distributions' -%}
@@ -25,7 +26,10 @@ ENV ELASTIC_CONTAINER true
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /usr/lib/jvm/jre-1.8.0-openjdk
 
-RUN yum update -y && yum install -y java-1.8.0-openjdk-headless wget which && yum clean all
+RUN yum update -y && yum install -y unzip wget which && yum clean all
+
+RUN curl -O ftp://fr2.rpmfind.net/linux/centos/7.4.1708/updates/x86_64/Packages/{{ java_rpm }} \
+ && yum --assumeyes --nogpgcheck localinstall {{ java_rpm }}
 
 RUN groupadd -g 1000 elasticsearch && adduser -u 1000 -g 1000 -d /usr/share/elasticsearch elasticsearch
 
