@@ -14,7 +14,3 @@ def test_security_audit_logs_are_in_docker_logs(elasticsearch):
 
 def test_info_level_logs_are_in_docker_logs(elasticsearch):
     elasticsearch.assert_in_docker_log('INFO')
-
-
-def test_no_errors_are_in_docker_logs(elasticsearch):
-    elasticsearch.assert_not_in_docker_log('ERROR')
