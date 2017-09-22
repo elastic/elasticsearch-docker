@@ -16,7 +16,9 @@
 {%   set url_root = 'https://artifacts.elastic.co/downloads/elasticsearch' -%}
 {% endif -%}
 
-FROM centos:7
+{# Use a centos base that has openjdk-1.8.0.b141 pre-installed and excluded from yum.conf,
+until potential issues with build 144 have been troubleshooted #}
+FROM docker.elastic.co/elasticsearch/centos-base:7.3-jvm141
 LABEL maintainer "Elastic Docker Team <docker@elastic.co>"
 
 ENV ELASTIC_CONTAINER true
