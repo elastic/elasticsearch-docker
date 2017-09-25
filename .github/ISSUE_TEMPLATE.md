@@ -20,6 +20,7 @@ Description block and provide responses for **all** of the below items.
 * Docker image used
 * Operating System
 * `docker info` output
+* `docker inspect NAME|ID` output
 * `docker-compose --version`, if relevant
 * Steps to reproduce
 -->
