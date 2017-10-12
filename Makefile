@@ -13,7 +13,7 @@ else
 endif
 
 # Build different images tagged as :version-<flavor>
-IMAGE_FLAVORS ?= basic platinum
+IMAGE_FLAVORS ?= oss basic platinum
 
 # Which image flavor will additionally receive the plain `:version` tag
 DEFAULT_IMAGE_FLAVOR ?= basic

@@ -5,6 +5,8 @@ import requests
 from requests import codes
 from requests.auth import HTTPBasicAuth
 from subprocess import run, PIPE
+from .toolbelt import exec_privilege_escalated_command, delete_dir, create_empty_dir
+import os
 
 retry_settings = {
     'stop_max_delay': 30000,
@@ -143,6 +145,45 @@ def elasticsearch(host):
             # Reset elasticsearch to its original state
             self.reset()
             return uninstall_output
+
+        def assert_bind_mount_data_dir_is_writable(self,
+                                                   datadir1="tests/datadir1",
+                                                   datadir2="tests/datadir2",
+                                                   process_uid='',
+                                                   datadir_uid=1000,
+                                                   datadir_gid=0):
+            cwd = os.getcwd()
+            (datavolume1_path, datavolume2_path) = (os.path.join(cwd, datadir1),
+                                                    os.path.join(cwd, datadir2))
+            config.option.mount_datavolume1 = datavolume1_path
+            config.option.mount_datavolume2 = datavolume2_path
+            # Yaml variables in docker-compose (`user:`) need to be a strings
+            config.option.process_uid = "{!s}".format(process_uid)
+
+            # Ensure defined data dirs are empty before tests
+            proc1 = delete_dir(datavolume1_path)
+            proc2 = delete_dir(datavolume2_path)
+
+            assert proc1.returncode == 0
+            assert proc2.returncode == 0
+
+            create_empty_dir(datavolume1_path, datadir_uid, datadir_gid)
+            create_empty_dir(datavolume2_path, datadir_uid, datadir_gid)
+
+            # Force Elasticsearch to re-run with new parameters
+            self.reset()
+            self.assert_healthy()
+
+            # Revert Elasticsearch back to its datadir defaults for the next tests
+            config.option.mount_datavolume1 = None
+            config.option.mount_datavolume2 = None
+            config.option.process_uid = ''
+
+            self.reset()
+
+            # Finally clean up the temp dirs used for bind-mounts
+            delete_dir(datavolume1_path)
+            delete_dir(datavolume2_path)
 
         def es_cmdline(self):
             return host.file("/proc/1/cmdline").content_string

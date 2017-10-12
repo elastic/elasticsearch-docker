@@ -1,6 +1,6 @@
 ---
 # This file was generated from the template at templates/docker-compose.yml.j2
-version: '2'
+version: '2.1'
 services:
   elasticsearch1:
     container_name: elasticsearch1
@@ -12,12 +12,16 @@ services:
       esnet:
         aliases:
           - elasticsearch
+    # If unset, uses empty string which Docker ignores
+    # Defined in tests/conftest.py to test starting with a random uid
+    user: ${PROCESS_UID}
     ulimits:
       memlock:
         soft: -1
         hard: -1
+    # DATA_VOLUME{1,2} are defined in tests/conftest.py
     volumes:
-      - esdata1:/usr/share/elasticsearch/data
+      - ${DATA_VOLUME1}:/usr/share/elasticsearch/data
 
   elasticsearch2:
     container_name: elasticsearch2
@@ -30,12 +34,13 @@ services:
     mem_limit: 4g
     networks:
       - esnet
+    user: ${PROCESS_UID}
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
-      - esdata2:/usr/share/elasticsearch/data
+      - ${DATA_VOLUME2}:/usr/share/elasticsearch/data
 
 volumes:
   esdata1:

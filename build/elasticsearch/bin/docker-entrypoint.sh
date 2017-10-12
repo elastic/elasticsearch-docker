@@ -1,6 +1,43 @@
 #!/bin/bash
+set -e
 
-# Run Elasticsearch and allow setting default settings via env vars
+# Files created by Elasticsearch should always be group writable too
+umask 0002
+
+run_as_other_user_if_needed() {
+    if [[ "$(id -u)" == "0" ]]; then
+        # If running as root, drop to specified UID and run command
+        exec chroot --userspec=1000 / "${@}"
+    else
+        # Either we are running in Openshift with random uid and are a member of the root group
+        # or with a custom --user
+        exec "${@}"
+    fi
+}
+
+# Allow user specify custom CMD, maybe bin/elasticsearch itself
+# for example to directly specify `-E` style parameters for elasticsearch on k8s
+# or simply to run /bin/bash to check the image
+if [[ "$1" != "eswrapper" ]]; then
+    if [[ "$(id -u)" == "0" ]] && [[ "$1" == *elasticsearch* ]]; then
+        # centos:7 chroot doesn't have `--skip-chdir` option and
+        # changes our CWD.  Rewrite CMD args to replace $1 with
+        # `elasticsearch` explicitly, so that we are backwards
+        # compatible with the docs from previous Elasticsearch
+        # versions<6 and configuration option D:
+        # https://www.elastic.co/guide/en/elasticsearch/reference/5.6/docker.html#_d_override_the_image_8217_s_default_ulink_url_https_docs_docker_com_engine_reference_run_cmd_default_command_or_options_cmd_ulink
+        # Without this, user could specify `elasticsearch -E x.y=z` but not
+        # `bin/elasticsearch -E x.y=z`
+        set -- "elasticsearch" "${@:2}"
+        # Use chroot to switch to UID 1000
+        exec chroot --userspec=1000 / "$@"
+    else
+        # User probably wants to exec something else, like /bin/bash
+        exec "$@"
+    fi
+fi
+
+# Parse Docker env vars to customize Elasticsearch
 #
 # e.g. Setting the env var cluster.name=testcluster
 #
@@ -42,8 +79,8 @@ if bin/elasticsearch-plugin list -s | grep -q x-pack; then
     # node at this step, we can't enforce the presence of this env
     # var.
     if [[ -n "$ELASTIC_PASSWORD" ]]; then
-        [[ -f config/elasticsearch.keystore ]] || bin/elasticsearch-keystore create
-        echo "$ELASTIC_PASSWORD" | bin/elasticsearch-keystore add -x 'bootstrap.password'
+        [[ -f config/elasticsearch.keystore ]] || run_as_other_user_if_needed "bin/elasticsearch-keystore" "create"
+        run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | bin/elasticsearch-keystore add -x 'bootstrap.password'
     fi
 
     # ALLOW_INSECURE_DEFAULT_TLS_CERT=true permits the use of a
@@ -59,4 +96,11 @@ if bin/elasticsearch-plugin list -s | grep -q x-pack; then
     fi
 fi
 
-exec bin/elasticsearch "${es_opts[@]}"
+if [[ "$(id -u)" == "0" ]]; then
+    # If requested and running as root, mutate the ownership of bind-mounts
+    if [[ -n "$TAKE_FILE_OWNERSHIP" ]]; then
+        chown -R 1000:0 /usr/share/elasticsearch/{data,logs}
+    fi
+fi
+
+run_as_other_user_if_needed /usr/share/elasticsearch/bin/elasticsearch "${es_opts[@]}"
