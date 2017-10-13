@@ -19,15 +19,16 @@ run_as_other_user_if_needed() {
 # for example to directly specify `-E` style parameters for elasticsearch on k8s
 # or simply to run /bin/bash to check the image
 if [[ "$1" != "eswrapper" ]]; then
-    if [[ "$(id -u)" == "0" ]] && [[ "$1" == *elasticsearch* ]]; then
-        # centos:7 chroot doesn't have `--skip-chdir` option and
-        # changes our CWD.  Rewrite CMD args to replace $1 with
-        # `elasticsearch` explicitly, so that we are backwards
-        # compatible with the docs from previous Elasticsearch
-        # versions<6 and configuration option D:
+    if [[ "$(id -u)" == "0" ]] && [[ $( basename "$1") == elasticsearch ]]; then
+        # centos:7 chroot doesn't have the `--skip-chdir` option and
+        # changes our CWD.
+        # Rewrite CMD args to replace $1 with `elasticsearch` explicitly,
+        # so that we are backwards compatible with the docs
+        # from the previous Elasticsearch versions<6
+        # and configuration option D:
         # https://www.elastic.co/guide/en/elasticsearch/reference/5.6/docker.html#_d_override_the_image_8217_s_default_ulink_url_https_docs_docker_com_engine_reference_run_cmd_default_command_or_options_cmd_ulink
-        # Without this, user could specify `elasticsearch -E x.y=z` but not
-        # `bin/elasticsearch -E x.y=z`
+        # Without this, user could specify `elasticsearch -E x.y=z` but
+        # `bin/elasticsearch -E x.y=z` would not work.
         set -- "elasticsearch" "${@:2}"
         # Use chroot to switch to UID 1000
         exec chroot --userspec=1000 / "$@"
