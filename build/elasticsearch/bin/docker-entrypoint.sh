@@ -19,7 +19,7 @@ run_as_other_user_if_needed() {
 # for example to directly specify `-E` style parameters for elasticsearch on k8s
 # or simply to run /bin/bash to check the image
 if [[ "$1" != "eswrapper" ]]; then
-    if [[ "$(id -u)" == "0" ]] && [[ $( basename "$1") == elasticsearch ]]; then
+    if [[ "$(id -u)" == "0" && $(basename "$1") == "elasticsearch" ]]; then
         # centos:7 chroot doesn't have the `--skip-chdir` option and
         # changes our CWD.
         # Rewrite CMD args to replace $1 with `elasticsearch` explicitly,
@@ -33,7 +33,7 @@ if [[ "$1" != "eswrapper" ]]; then
         # Use chroot to switch to UID 1000
         exec chroot --userspec=1000 / "$@"
     else
-        # User probably wants to exec something else, like /bin/bash
+        # User probably wants to run something else, like /bin/bash, with another uid forced (Openshift?)
         exec "$@"
     fi
 fi
