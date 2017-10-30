@@ -63,7 +63,7 @@ RUN for PLUGIN in {{ ingest_plugins }}; do \
 RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
   {% else -%}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
-  {%- endif %}
+  {%- endif -%}
       eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN"; \
     done
 {% else -%}
@@ -78,7 +78,7 @@ RUN for PLUGIN in {{ ingest_plugins }}; do \
 COPY --chown=1000:0 elasticsearch.yml log4j2.properties config/
 
 {% if image_flavor == 'platinum' -%}
-COPY --chown=1000:0 log4j2.properties config/
+# Enable security logging audit trail
 COPY --chown=1000:0 x-pack/log4j2.properties config/x-pack/
 RUN echo 'xpack.license.self_generated.type: trial' >>config/elasticsearch.yml
 
