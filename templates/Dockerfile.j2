@@ -78,12 +78,9 @@ RUN for PLUGIN in {{ ingest_plugins }}; do \
 COPY --chown=1000:0 elasticsearch.yml log4j2.properties config/
 
 {% if image_flavor == 'platinum' -%}
-COPY --chown=1000:0 certgen_instances.yml log4j2.properties config/
+COPY --chown=1000:0 log4j2.properties config/
 COPY --chown=1000:0 x-pack/log4j2.properties config/x-pack/
 RUN echo 'xpack.license.self_generated.type: trial' >>config/elasticsearch.yml
-RUN bin/x-pack/certgen -s -in config/certgen_instances.yml --out config/certs.zip && \
-    unzip -d config/x-pack/ config/certs.zip && \
-    rm config/certs.zip config/certgen_instances.yml
 
 {% elif image_flavor == 'basic' -%}
 RUN echo 'xpack.license.self_generated.type: basic' >>config/elasticsearch.yml

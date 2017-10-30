@@ -83,18 +83,6 @@ if bin/elasticsearch-plugin list -s | grep -q x-pack; then
         [[ -f config/elasticsearch.keystore ]] || run_as_other_user_if_needed "bin/elasticsearch-keystore" "create"
         run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | bin/elasticsearch-keystore add -x 'bootstrap.password'
     fi
-
-    # ALLOW_INSECURE_DEFAULT_TLS_CERT=true permits the use of a
-    # pre-bundled self signed cert for transport TLS.
-    # This should be used strictly on non-production environments.
-    if [[ "$ALLOW_INSECURE_DEFAULT_TLS_CERT" == "true" ]]; then
-        es_opts+=( '-Expack.security.authc.token.enabled=false'
-                   '-Expack.ssl.verification_mode=certificate'
-                   '-Expack.ssl.key=x-pack/node01/node01.key'
-                   '-Expack.ssl.certificate=x-pack/node01/node01.crt'
-                   '-Expack.ssl.certificate_authorities=x-pack/ca/ca.crt'
-                 )
-    fi
 fi
 
 if [[ "$(id -u)" == "0" ]]; then
