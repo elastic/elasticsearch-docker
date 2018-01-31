@@ -8,3 +8,4 @@ build/elasticsearch/Dockerfile
 build/elasticsearch/Dockerfile-*
 build/elasticsearch/elasticsearch*.tar.gz
 tests/docker-compose*.yml
+/snapshots

@@ -112,6 +112,26 @@ build-from-local-artifacts: venv dockerfile docker-compose
 	)
 	docker kill elasticsearch-docker-artifact-server
 
+# Build images from the latest snapshots on snapshots.elastic.co
+from-snapshot:
+	rm -rf snapshots
+
+	mkdir -p snapshots/elasticsearch/distribution/tar/build/distributions
+	(cd snapshots/elasticsearch/distribution/tar/build/distributions && \
+	  wget https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-$(ELASTIC_VERSION)-SNAPSHOT.tar.gz)
+
+	mkdir -p snapshots/x-pack-elasticsearch/plugin/build/distributions
+	(cd snapshots/x-pack-elasticsearch/plugin/build/distributions && \
+	  wget https://snapshots.elastic.co/downloads/elasticsearch-plugins/x-pack/x-pack-$(ELASTIC_VERSION)-SNAPSHOT.zip)
+
+	for plugin in ingest-user-agent ingest-geoip; do \
+	  mkdir -p snapshots/elasticsearch/plugins/$$plugin/build/distributions; \
+	  (cd snapshots/elasticsearch/plugins/$$plugin/build/distributions && \
+	    wget https://snapshots.elastic.co/downloads/elasticsearch-plugins/$$plugin/$$plugin-$(ELASTIC_VERSION)-SNAPSHOT.zip); \
+	done
+
+	ARTIFACTS_DIR=$$PWD/snapshots make release-manager-snapshot
+
 # Push the images to the dedicated push endpoint at "push.docker.elastic.co"
 push: test
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
