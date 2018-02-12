@@ -107,11 +107,18 @@ LABEL maintainer "Elastic Docker Team <docker@elastic.co>"
 
 ENV ELASTIC_CONTAINER true
 ENV PATH /usr/share/elasticsearch/bin:$PATH
-ENV JAVA_HOME /usr/lib/jvm/jre-1.8.0-openjdk
+ENV JAVA_HOME /opt/java-{{ jdk_major_version }}
 
 RUN yum update -y && \
-    yum install -y nc java-1.8.0-openjdk-headless unzip wget which && \
+    yum install -y nc unzip wget which && \
     yum clean all
+
+RUN mkdir -p /opt/java-{{ jdk_major_version }} && \
+    cd /opt/java-{{ jdk_major_version }} && \
+    curl -fsSL https://download.java.net/java/GA/jdk{{ jdk_major_version }}/{{ jdk_full_version }}/binaries/openjdk-{{ jdk_full_version }}_linux-x64_bin.tar.gz  | \
+    tar zx --strip-components=1 && \
+    echo 'export PATH=$PATH:/opt/java-{{ jdk_major_version }}/bin' >/etc/profile.d/java_path.sh && \
+    chmod 0644 /etc/profile.d/java_path.sh
 
 RUN groupadd -g 1000 elasticsearch && \
     adduser -u 1000 -g 1000 -G 0 -d /usr/share/elasticsearch elasticsearch && \

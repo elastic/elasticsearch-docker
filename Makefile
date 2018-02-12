@@ -20,6 +20,10 @@ DEFAULT_IMAGE_FLAVOR ?= basic
 
 IMAGE_TAG ?= $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch
 
+# Java version to install in the docker image
+JDK_MAJOR_VERSION ?= 9
+JDK_FULL_VERSION ?= 9.0.4
+
 # When invoking docker-compose, use an extra config fragment to map Elasticsearch's
 # listening port to the docker host.
 # For the x-pack security enabled image (platinum), use the fragment we utilize for tests.
@@ -163,6 +167,8 @@ dockerfile: venv templates/Dockerfile.j2
 	   -D staging_build_num='$(STAGING_BUILD_NUM)' \
 	   -D artifacts_dir='$(ARTIFACTS_DIR)' \
 	   -D image_flavor='$(FLAVOR)' \
+	   -D jdk_major_version='$(JDK_MAJOR_VERSION)' \
+	   -D jdk_full_version='$(JDK_FULL_VERSION)' \
 	   templates/Dockerfile.j2 > build/elasticsearch/Dockerfile-$(FLAVOR); \
 	)
 
