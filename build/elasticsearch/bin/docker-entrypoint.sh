@@ -80,8 +80,8 @@ if bin/elasticsearch-plugin list -s | grep -q x-pack; then
     # node at this step, we can't enforce the presence of this env
     # var.
     if [[ -n "$ELASTIC_PASSWORD" ]]; then
-        [[ -f config/elasticsearch.keystore ]] || run_as_other_user_if_needed "bin/elasticsearch-keystore" "create"
-        run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | bin/elasticsearch-keystore add -x 'bootstrap.password'
+        [[ -f /usr/share/elasticsearch/config/elasticsearch.keystore ]] || (run_as_other_user_if_needed elasticsearch-keystore create)
+        (run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password')
     fi
 fi
 
