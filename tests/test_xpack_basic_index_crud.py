@@ -5,16 +5,6 @@ import pytest
 image_flavor = pytest.config.getoption('--image-flavor')
 
 
-@pytest.mark.skipif(image_flavor != 'platinum',
-                    reason="x-pack security not installed in the -{} image.".format(image_flavor))
-def test_bootstrap_password_change(elasticsearch):
-    try:
-        elasticsearch.set_password('elastic', 'thenewpassword')
-        assert elasticsearch.get().status_code == codes.unauthorized
-    finally:
-        elasticsearch.reset()
-
-
 def test_create_index(elasticsearch):
     response = elasticsearch.create_index('creation_test_index')
     assert response.status_code == codes.ok
