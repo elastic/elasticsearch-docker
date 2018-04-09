@@ -11,4 +11,5 @@ def test_process_is_running_as_the_correct_user(elasticsearch):
 
 
 def test_process_is_running_the_correct_version(elasticsearch):
-    assert elasticsearch.get_root_page()['version']['number'] == version
+    version_string = version.replace('-SNAPSHOT', '')
+    assert elasticsearch.get_root_page()['version']['number'] == version_string

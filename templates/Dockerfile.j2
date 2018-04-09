@@ -6,11 +6,17 @@
 
 {% set ingest_plugins = 'ingest-user-agent ingest-geoip' %}
 {% set version_tag = elastic_version -%}
-{% set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
+
+{% if image_flavor == 'oss' -%}
+{%   set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
+{%   set tarball_dir = 'distribution/archives/tar/build/distributions' -%}
+{% else -%}
+{%   set tarball = 'elasticsearch-oss-%s.tar.gz' % elastic_version -%}
+{%   set tarball_dir = 'distribution/archives/oss-tar/build/distributions' -%}
+{% endif -%}
 
 {% if artifacts_dir -%}
-{%   set url_root = 'http://localhost:8000/elasticsearch/distribution/archives/tar/build/distributions' -%}
-{%   set x_pack_url_root = 'http://localhost:8000/x-pack-elasticsearch/plugin/build/distributions' -%}
+{%   set url_root = 'http://localhost:8000/elasticsearch/%s' % tarball_dir -%}
 {%   set plugin_url_root = 'http://localhost:8000/elasticsearch/plugins' -%}
 {% elif staging_build_num -%}
 {%   set version_tag = version_tag + '-' + staging_build_num -%}
@@ -50,41 +56,21 @@ RUN set -ex && for esdirs in config data logs; do \
         mkdir -p "$esdirs"; \
     done
 
-# Install x-pack and also the ingest-{agent,geoip} modules required for Filebeat
+# Install the ingest-{agent,geoip} modules required for Filebeat
 {% if artifacts_dir -%}
-  {% if image_flavor != 'oss' -%}
-RUN elasticsearch-plugin install --batch "{{ x_pack_url_root }}/x-pack-{{ elastic_version }}.zip"
-  {%- endif %}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
       elasticsearch-plugin install --batch "{{ plugin_url_root }}/$PLUGIN/build/distributions/$PLUGIN-{{ elastic_version }}.zip"; \
     done
 {% elif staging_build_num -%}
-  {% if image_flavor != 'oss' -%}
-RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
-  {% else -%}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
-  {%- endif -%}
       eval ES_JAVA_OPTS="-Des.plugins.staging={{ staging_build_num }}" elasticsearch-plugin install --batch "$PLUGIN"; \
     done
 {% else -%}
-  {% if image_flavor != 'oss' -%}
-RUN for PLUGIN in x-pack {{ ingest_plugins }}; do \
-  {% else -%}
 RUN for PLUGIN in {{ ingest_plugins }}; do \
-  {%- endif -%}
       elasticsearch-plugin install --batch "$PLUGIN"; done
 {%- endif %}
 
 COPY --chown=1000:0 elasticsearch.yml log4j2.properties config/
-
-{% if image_flavor == 'platinum' -%}
-# Enable security logging audit trail
-COPY --chown=1000:0 x-pack/log4j2.properties config/x-pack/
-RUN echo 'xpack.license.self_generated.type: trial' >>config/elasticsearch.yml
-
-{% elif image_flavor == 'basic' -%}
-RUN echo 'xpack.license.self_generated.type: basic' >>config/elasticsearch.yml
-{% endif -%}
 
 USER 0
 
@@ -100,8 +86,6 @@ RUN chown -R elasticsearch:0 . && \
 # Add entrypoint
 ################################################################################
 
-# Use a centos base that has openjdk-1.8.0.b141 pre-installed and excluded from yum.conf
-# until potential issues with build 144 have been troubleshooted
 FROM centos:7
 LABEL maintainer "Elastic Docker Team <docker@elastic.co>"
 
