@@ -13,10 +13,10 @@ else
 endif
 
 # Build different images tagged as :version-<flavor>
-IMAGE_FLAVORS ?= oss basic platinum
+IMAGE_FLAVORS ?= oss full
 
 # Which image flavor will additionally receive the plain `:version` tag
-DEFAULT_IMAGE_FLAVOR ?= basic
+DEFAULT_IMAGE_FLAVOR ?= full
 
 IMAGE_TAG ?= $(ELASTIC_REGISTRY)/elasticsearch/elasticsearch
 
@@ -142,7 +142,7 @@ push: test
 	)
 
 # Also push the plain named image based on DEFAULT_IMAGE_FLAVOR
-# e.g. elasticsearch-basic:6.0.0 and elasticsearch:6.0.0 are the same.
+# e.g. elasticsearch-full:6.0.0 and elasticsearch:6.0.0 are the same.
 	@if [[ -z "$$(docker images -q $(IMAGE_TAG):$(VERSION_TAG))" ]]; then\
 	  echo;\
 	  echo "I can't push $(IMAGE_TAG):$(VERSION_TAG)";\
