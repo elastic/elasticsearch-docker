@@ -90,11 +90,12 @@ FROM centos:7
 LABEL maintainer "Elastic Docker Team <docker@elastic.co>"
 
 ENV ELASTIC_CONTAINER true
-ENV PATH /usr/share/elasticsearch/bin:$PATH
-ENV JAVA_HOME /usr/lib/jvm/jre-1.8.0-openjdk
+
+RUN curl -s https://download.java.net/java/GA/jdk10/10/binaries/openjdk-10_linux-x64_bin.tar.gz | tar -C /opt -zxf -
+ENV JAVA_HOME /opt/jdk-10
 
 RUN yum update -y && \
-    yum install -y nc java-1.8.0-openjdk-headless unzip wget which && \
+    yum install -y nc unzip wget which && \
     yum clean all
 
 RUN groupadd -g 1000 elasticsearch && \
@@ -103,8 +104,8 @@ RUN groupadd -g 1000 elasticsearch && \
     chgrp 0 /usr/share/elasticsearch
 
 WORKDIR /usr/share/elasticsearch
-
 COPY --from=prep_es_files --chown=1000:0 /usr/share/elasticsearch /usr/share/elasticsearch
+ENV PATH /usr/share/elasticsearch/bin:$PATH
 
 COPY --chown=1000:0 bin/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
