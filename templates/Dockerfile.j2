@@ -8,11 +8,11 @@
 {% set version_tag = elastic_version -%}
 
 {% if image_flavor == 'oss' -%}
-{%   set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
-{%   set tarball_dir = 'distribution/archives/tar/build/distributions' -%}
-{% else -%}
 {%   set tarball = 'elasticsearch-oss-%s.tar.gz' % elastic_version -%}
 {%   set tarball_dir = 'distribution/archives/oss-tar/build/distributions' -%}
+{% else -%}
+{%   set tarball = 'elasticsearch-%s.tar.gz' % elastic_version -%}
+{%   set tarball_dir = 'distribution/archives/tar/build/distributions' -%}
 {% endif -%}
 
 {% if artifacts_dir -%}
