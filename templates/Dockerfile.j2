@@ -16,8 +16,8 @@
 {% endif -%}
 
 {% if artifacts_dir -%}
-{%   set url_root = 'http://localhost:8000/elasticsearch/%s' % tarball_dir -%}
-{%   set plugin_url_root = 'http://localhost:8000/elasticsearch/plugins' -%}
+{%   set url_root = 'http://elasticsearch-docker-artifact-server:8000/elasticsearch/%s' % tarball_dir -%}
+{%   set plugin_url_root = 'http://elasticsearch-docker-artifact-server:8000/elasticsearch/plugins' -%}
 {% elif staging_build_num -%}
 {%   set version_tag = version_tag + '-' + staging_build_num -%}
 {%   set url_root = 'https://staging.elastic.co/%s/downloads/elasticsearch' % version_tag -%}
