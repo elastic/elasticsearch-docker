@@ -21,7 +21,7 @@ services:
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-1
       # Also try a parameter containing an underscore character.
-      - thread_pool.bulk.queue_size=500
+      - thread_pool.search.queue_size=500
       # Test setting max heap to a non default value with environment variables.
       - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       # Env vars not followed by a dot, should not be parsed by the wrapper script.
