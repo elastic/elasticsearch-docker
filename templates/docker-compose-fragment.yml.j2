@@ -47,7 +47,7 @@ services:
       {% endif -%}
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2
-      - thread_pool.bulk.queue_size=500
+      - thread_pool.search.queue_size=500
       - "ES_JAVA_OPTS=-Xms1152M -Xmx1152M"
       - irrelevantsetting=foo
       - NonESRelatedVariable=bar
