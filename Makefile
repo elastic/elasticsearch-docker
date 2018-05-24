@@ -123,9 +123,9 @@ from-snapshot:
 	(cd snapshots/elasticsearch/distribution/archives/tar/build/distributions && \
 	  wget https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-$(ELASTIC_VERSION)-SNAPSHOT.tar.gz)
 
-	mkdir -p snapshots/x-pack-elasticsearch/plugin/build/distributions
-	(cd snapshots/x-pack-elasticsearch/plugin/build/distributions && \
-	  wget https://snapshots.elastic.co/downloads/elasticsearch-plugins/x-pack/x-pack-$(ELASTIC_VERSION)-SNAPSHOT.zip)
+	mkdir -p snapshots/elasticsearch/distribution/archives/oss-tar/build/distributions
+	(cd snapshots/elasticsearch/distribution/archives/oss-tar/build/distributions && \
+	  wget https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-oss-$(ELASTIC_VERSION)-SNAPSHOT.tar.gz)
 
 	for plugin in ingest-user-agent ingest-geoip; do \
 	  mkdir -p snapshots/elasticsearch/plugins/$$plugin/build/distributions; \
