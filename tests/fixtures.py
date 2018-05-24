@@ -9,7 +9,7 @@ from .toolbelt import exec_privilege_escalated_command, delete_dir, create_empty
 import os
 
 retry_settings = {
-    'stop_max_delay': 30000,
+    'stop_max_delay': 60000,
     'wait_exponential_multiplier': 100,
     'wait_exponential_max': 10000
 }
