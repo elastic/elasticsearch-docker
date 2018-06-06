@@ -6,7 +6,9 @@ from requests import codes
 from requests.auth import HTTPBasicAuth
 from subprocess import run, PIPE
 from .toolbelt import exec_privilege_escalated_command, delete_dir, create_empty_dir
+import json
 import os
+import pytest
 
 retry_settings = {
     'stop_max_delay': 60000,
@@ -24,11 +26,27 @@ def elasticsearch(host):
         bootstrap_pwd = "pleasechangeme"
 
         def __init__(self):
+            self.version = run('./bin/elastic-version', stdout=PIPE).stdout.decode().strip()
+            self.flavor = pytest.config.getoption('--image-flavor')
             self.url = 'http://localhost:9200'
+
             if config.getoption('--image-flavor') == 'platinum':
                 self.auth = HTTPBasicAuth('elastic', Elasticsearch.bootstrap_pwd)
             else:
                 self.auth = ''
+
+            if 'STAGING_BUILD_NUM' in os.environ:
+                self.tag = '%s-%s' % (self.version, os.environ['STAGING_BUILD_NUM'])
+            else:
+                self.tag = self.version
+
+            if self.flavor != 'full':
+                self.image = 'docker.elastic.co/elasticsearch/elasticsearch-%s:%s' % (self.flavor, self.tag)
+            else:
+                self.image = 'docker.elastic.co/elasticsearch/elasticsearch:%s' % (self.tag)
+
+            self.docker_metadata = json.loads(
+                run(['docker', 'inspect', self.image], stdout=PIPE).stdout)[0]
 
             self.assert_healthy()
 
