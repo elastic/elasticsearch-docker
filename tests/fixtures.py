@@ -46,7 +46,7 @@ def elasticsearch(host):
                 self.image = 'docker.elastic.co/elasticsearch/elasticsearch:%s' % (self.tag)
 
             self.docker_metadata = json.loads(
-                run(['docker', 'inspect', self.image], stdout=PIPE).stdout)[0]
+                run(['docker', 'inspect', self.image], stdout=PIPE).stdout.decode())[0]
 
             self.assert_healthy()
 
