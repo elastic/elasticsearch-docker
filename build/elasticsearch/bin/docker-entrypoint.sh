@@ -73,8 +73,7 @@ done < <(env)
 # will run in.
 export ES_JAVA_OPTS="-Des.cgroups.hierarchy.override=/ $ES_JAVA_OPTS"
 
-# Determine if x-pack is enabled
-if bin/elasticsearch-plugin list -s | grep -q x-pack; then
+if [[ -d bin/x-pack ]]; then
     # Setting ELASTIC_PASSWORD is mandatory on the *first* node (unless
     # LDAP is used). As we have no way of knowing if this is the first
     # node at this step, we can't enforce the presence of this env
