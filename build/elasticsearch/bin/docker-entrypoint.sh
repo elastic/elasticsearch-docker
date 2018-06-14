@@ -74,10 +74,12 @@ done < <(env)
 export ES_JAVA_OPTS="-Des.cgroups.hierarchy.override=/ $ES_JAVA_OPTS"
 
 if [[ -d bin/x-pack ]]; then
-    # Setting ELASTIC_PASSWORD is mandatory on the *first* node (unless
-    # LDAP is used). As we have no way of knowing if this is the first
-    # node at this step, we can't enforce the presence of this env
-    # var.
+    # Check for the ELASTIC_PASSWORD environment variable to set the
+    # bootstrap password for Security.
+    #
+    # This is only required for the first node in a cluster with Security
+    # enabled, but we have no way of knowing which node we are yet. We'll just
+    # honor the variable if it's present.
     if [[ -n "$ELASTIC_PASSWORD" ]]; then
         [[ -f /usr/share/elasticsearch/config/elasticsearch.keystore ]] || (run_as_other_user_if_needed elasticsearch-keystore create)
         (run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password')
