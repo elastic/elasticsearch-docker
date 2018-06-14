@@ -82,7 +82,9 @@ if [[ -d bin/x-pack ]]; then
     # honor the variable if it's present.
     if [[ -n "$ELASTIC_PASSWORD" ]]; then
         [[ -f /usr/share/elasticsearch/config/elasticsearch.keystore ]] || (run_as_other_user_if_needed elasticsearch-keystore create)
-        (run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password')
+        if ! (run_as_other_user_if_needed elasticsearch-keystore list | grep -q '^bootstrap.password$'); then
+            (run_as_other_user_if_needed echo "$ELASTIC_PASSWORD" | elasticsearch-keystore add -x 'bootstrap.password')
+        fi
     fi
 fi
 
