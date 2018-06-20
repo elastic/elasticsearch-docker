@@ -23,7 +23,7 @@ A full build and test requires:
 To get started create a new virtualenv named `venv` in the root of this directory.
 
 ```
-virtualenv --python python3 venv
+virtualenv --python=python3 venv
 ```
 
 next you will need to activate the virtualenv and install requirements
