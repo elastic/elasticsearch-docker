@@ -16,7 +16,25 @@ A full build and test requires:
 
 - Docker
 - GNU Make
-- Python 3.5 with Virtualenv
+- Python 3.5+ with Virtualenv
+
+## Getting started for the first time
+
+To get started create a new virtualenv named `venv` in the root of this directory.
+
+```
+virtualenv --python python3 venv
+```
+
+next you will need to activate the virtualenv and install requirements
+
+```
+source ./venv/bin/activate
+```
+
+```
+pip install -r requirements.txt
+```
 
 ## Running a build
 To build an image with the latest nightly snapshot of Elasticsearch, run:
