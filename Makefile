@@ -69,6 +69,7 @@ pristine: clean
 	docker rmi -f $(IMAGE_TAG)-$(FLAVOR):$(VERSION_TAG); \
 	)
 	-docker rmi -f $(IMAGE_TAG):$(VERSION_TAG)
+	rm -rf venv
 
 # Give us an easy way to start the DEFAULT_IMAGE_FLAVOR
 run: run-single
