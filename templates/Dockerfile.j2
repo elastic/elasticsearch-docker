@@ -90,13 +90,13 @@ FROM centos:7
 
 ENV ELASTIC_CONTAINER true
 
-RUN curl -s https://download.java.net/java/GA/jdk10/10.0.1/fb4372174a714e6b8c52526dc134031e/10/openjdk-10.0.1_linux-x64_bin.tar.gz | tar -C /opt -zxf -
-ENV JAVA_HOME /opt/jdk-10.0.1
+RUN curl -s https://download.java.net/java/GA/jdk10/10.0.2/19aef61b38124481863b1413dce1855f/13/openjdk-10.0.2_linux-x64_bin.tar.gz | tar -C /opt -zxf -
+ENV JAVA_HOME /opt/jdk-10.0.2
 
 # Replace OpenJDK's built-in CA certificate keystore with the one from the OS
 # vendor. The latter is superior in several ways.
 # REF: https://github.com/elastic/elasticsearch-docker/issues/171
-RUN ln -sf /etc/pki/ca-trust/extracted/java/cacerts /opt/jdk-10.0.1/lib/security/cacerts
+RUN ln -sf /etc/pki/ca-trust/extracted/java/cacerts /opt/jdk-10.0.2/lib/security/cacerts
 
 RUN yum update -y && \
     yum install -y nc unzip wget which && \
