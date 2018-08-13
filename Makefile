@@ -48,6 +48,10 @@ test: lint docker-compose
 	  ./bin/pytest --image-flavor=$(FLAVOR) tests; \
 	)
 
+# Test a snapshot image, which requires modifying the ELASTIC_VERSION to find the right images.
+test-snapshot:
+	ELASTIC_VERSION=$(ELASTIC_VERSION)-SNAPSHOT make test
+
 # Build and test
 test-build: lint build docker-compose
 
