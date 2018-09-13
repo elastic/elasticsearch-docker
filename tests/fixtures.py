@@ -103,7 +103,7 @@ def elasticsearch(host):
             nodes = self.get('/_nodes?filter_path=**.thread_pool').json()['nodes'].values()
             return [node['settings']['thread_pool']['search']['queue_size'] for node in nodes]
 
-        def get_processors_settings(self):
+        def get_processors_setting(self):
             nodes = self.get('/_nodes/settings?filter_path=**.processors').json()['nodes'].values()
             return [node['settings']['processors'] for node in nodes]
 
