@@ -6,7 +6,7 @@
 # The version can also be forced by setting the ELASTIC_VERSION environment variable.
 
 import json
-from os import environ
+import os
 
 
 def get_hard_coded_version():
@@ -14,12 +14,19 @@ def get_hard_coded_version():
     return version_info['version']
 
 
+def qualify(version):
+    qualifier = os.getenv('VERSION_QUALIFIER')
+    if qualifier:
+        # ignore None or ''
+        return "-".join([version, qualifier])
+    return version
+
+
 def get_version():
-    if 'ELASTIC_VERSION' in environ:
-        # Then the user has forced the version. Do as they say!
-        return(environ['ELASTIC_VERSION'])
-    else:
-        return(get_hard_coded_version())
+    version = os.getenv('ELASTIC_VERSION')
+    if version:
+        return version
+    return qualify(get_hard_coded_version())
 
 
 if __name__ == '__main__':
