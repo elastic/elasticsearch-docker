@@ -3,7 +3,7 @@ def test_java_is_runnable_via_java_home_env_var(host):
 
 
 def test_java_major_version(host):
-    assert 'openjdk version "10.' in host.run('$JAVA_HOME/bin/java -version').stderr
+    assert 'openjdk version "11.' in host.run('$JAVA_HOME/bin/java -version').stderr
 
 
 def test_java_uses_the_os_provided_keystore(host):
