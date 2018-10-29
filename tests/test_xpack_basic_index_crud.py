@@ -32,7 +32,7 @@ def test_search_on_nonexistent_index_fails(elasticsearch):
     response = elasticsearch.query_all('no_index')
     error_root_cause = response.json()['error']['root_cause'][0]
     assert 'no_index' == error_root_cause['index']
-    assert 'no such index' == error_root_cause['reason']
+    assert 'no such index [no_index]' == error_root_cause['reason']
 
 
 def test_cluster_is_healthy_after_indexing_data(elasticsearch):
