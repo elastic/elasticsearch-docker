@@ -1,4 +1,3 @@
-from .constants import version
 from .fixtures import elasticsearch
 
 
@@ -11,5 +10,6 @@ def test_process_is_running_as_the_correct_user(elasticsearch):
 
 
 def test_process_is_running_the_correct_version(elasticsearch):
-    version_string = version.replace('-SNAPSHOT', '')
-    assert elasticsearch.get_root_page()['version']['number'] == version_string
+    running_version = elasticsearch.get_root_page()['version']['number']
+    correct_version = elasticsearch.version_number
+    assert running_version == correct_version

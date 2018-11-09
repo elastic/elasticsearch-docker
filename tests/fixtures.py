@@ -27,6 +27,7 @@ def elasticsearch(host):
 
         def __init__(self):
             self.version = run('./bin/elastic-version', stdout=PIPE).stdout.decode().strip()
+            self.version_number = self.version.split('-', 1)[0]  # '7.0.0-alpha1-SNAPSHOT' -> '7.0.0'
             self.flavor = pytest.config.getoption('--image-flavor')
             self.url = 'http://localhost:9200'
 
