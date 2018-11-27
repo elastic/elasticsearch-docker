@@ -3,7 +3,7 @@ ELASTIC_VERSION := $(shell ./bin/elastic-version)
 
 TEDI_DEBUG ?= false
 TEDI_VERSION ?= 0.10
-TEDI ?= docker run --rm -it \
+TEDI ?= docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v $(PWD):/mnt \
   -v $(PWD)/../..:/release-manager \
