@@ -1,0 +1,71 @@
+images:
+  elasticsearch-full:
+    aliases:
+      - elasticsearch
+      - docker.elastic.co/elasticsearch/elasticsearch
+      - docker.elastic.co/elasticsearch/elasticsearch-full
+    facts:
+      image_flavor: full
+
+  elasticsearch-oss:
+    aliases:
+      - docker.elastic.co/elasticsearch/elasticsearch-oss
+    facts:
+      image_flavor: oss
+
+facts:
+  docker_registry: docker.elastic.co
+  jdk_version: 11.0.1
+  jdk_url: https://download.java.net/java/GA/jdk11/13/GPL/openjdk-11.0.1_linux-x64_bin.tar.gz
+  release_root: https://artifacts.elastic.co/downloads
+  snapshot_root: https://snapshots.elastic.co/downloads
+  local_release_root: file:///release-manager/build/release-artifacts/elasticsearch
+  local_snapshot_root: file:///release-manager/build/snapshot-artifacts/elasticsearch
+
+asset_sets:
+  # By default, build from publicly released artifacts.
+  # Note that they may not be available yet for the current {{ elastic_version }}.
+  default:
+    - filename: elasticsearch-full-{{ elastic_version }}.tar.gz
+      source: '{{ release_root }}/elasticsearch/elasticsearch-{{ elastic_version }}.tar.gz'
+    - filename: elasticsearch-oss-{{ elastic_version }}.tar.gz
+      source: '{{ release_root }}/elasticsearch/elasticsearch-oss-{{ elastic_version }}.tar.gz'
+    - filename: ingest-geoip.zip
+      source: '{{ release_root }}/elasticsearch-plugins/ingest-geoip/ingest-geoip-{{ elastic_version }}.zip'
+    - filename: ingest-user-agent.zip
+      source: '{{ release_root }}/elasticsearch-plugins/ingest-user-agent/ingest-user-agent-{{ elastic_version }}.zip'
+
+  # Published nightly snapshot artifacts.
+  snapshot:
+    - filename: elasticsearch-full-{{ elastic_version }}.tar.gz
+      source: '{{ snapshot_root }}/elasticsearch/elasticsearch-{{ elastic_version }}-SNAPSHOT.tar.gz'
+    - filename: elasticsearch-oss-{{ elastic_version }}.tar.gz
+      source: '{{ snapshot_root }}/elasticsearch/elasticsearch-oss-{{ elastic_version }}-SNAPSHOT.tar.gz'
+    - filename: ingest-geoip.zip
+      source: '{{ snapshot_root }}/elasticsearch-plugins/ingest-geoip/ingest-geoip-{{ elastic_version }}-SNAPSHOT.zip'
+    - filename: ingest-user-agent.zip
+      source: '{{ snapshot_root }}/elasticsearch-plugins/ingest-user-agent/ingest-user-agent-{{ elastic_version }}-SNAPSHOT.zip'
+
+  # Snapshot artifacts on the local disk, produced by Release Manager.
+  # Something (Makefile) will have to arrange for the release-manager root directory
+  # to be mounted at /release-manager.
+  local_snapshot:
+    - filename: elasticsearch-full-{{ elastic_version }}.tar.gz
+      source: '{{ local_snapshot_root }}/distribution/archives/tar/build/distributions/elasticsearch-{{ elastic_version }}-SNAPSHOT.tar.gz'
+    - filename: elasticsearch-oss-{{ elastic_version }}.tar.gz
+      source: '{{ local_snapshot_root }}/distribution/archives/oss-tar/build/distributions/elasticsearch-oss-{{ elastic_version }}-SNAPSHOT.tar.gz'
+    - filename: ingest-geoip.zip
+      source: '{{ local_snapshot_root }}/plugins/ingest-geoip/build/distributions/ingest-geoip-{{ elastic_version }}-SNAPSHOT.zip'
+    - filename: ingest-user-agent.zip
+      source: '{{ local_snapshot_root }}/plugins/ingest-user-agent/build/distributions/ingest-user-agent-{{ elastic_version }}-SNAPSHOT.zip'
+
+  # Release artifacts on the local disk, produced by Release Manager.
+  local_release:
+    - filename: elasticsearch-full-{{ elastic_version }}.tar.gz
+      source: '{{ local_release_root }}/distribution/archives/tar/build/distributions/elasticsearch-{{ elastic_version }}.tar.gz'
+    - filename: elasticsearch-oss-{{ elastic_version }}.tar.gz
+      source: '{{ local_release_root }}/distribution/archives/oss-tar/build/distributions/elasticsearch-oss-{{ elastic_version }}.tar.gz'
+    - filename: ingest-geoip.zip
+      source: '{{ local_release_root }}/plugins/ingest-geoip/build/distributions/ingest-geoip-{{ elastic_version }}.zip'
+    - filename: ingest-user-agent.zip
+      source: '{{ local_release_root }}/plugins/ingest-user-agent/build/distributions/ingest-user-agent-{{ elastic_version }}.zip'

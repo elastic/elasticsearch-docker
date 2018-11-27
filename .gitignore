@@ -11,3 +11,5 @@ tests/docker-compose*.yml
 /snapshots
 .pytest_cache
 .vagrant
+.tedi/assets
+.tedi/build

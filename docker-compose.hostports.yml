@@ -1,7 +1,0 @@
-# Override docker-compose ports to expose 9200 on localhost for run-* targets
----
-version: '2'
-services:
-  elasticsearch1:
-    ports:
-      - 9200:9200

@@ -1,22 +1,10 @@
-# This file was generated from the template at templates/docker-compose-fragment.yml.j2
-# The docker-compose fragment file provides settings that are specific to
-# running the test suite. Some of the settings are useful as "canaries", for
-# making assertions about the configuration.
 ---
+# This file was generated from the template at tedi/docker-compose.yml.j2
 version: '2.1'
 services:
   elasticsearch1:
-    # Let Testinfra infer the container name by making the hostname the same.
     hostname: elasticsearch1
     environment:
-      {% if image_flavor == 'platinum' -%}
-      # Specify the bootstrap password for elastic user.
-      - ELASTIC_PASSWORD=pleasechangeme
-      {% endif -%}
-      {% if image_flavor == 'platinum' -%}
-      # Enable Security audit logging so we can check the output for correctness.
-      - xpack.security.audit.enabled=true
-      {% endif -%}
       # Try setting a few options with environment variables.
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-1
@@ -37,16 +25,27 @@ services:
     # Expose Elasticsearch to the host system, so that the test suite can see it.
     ports:
       - 9200:9200
+    container_name: elasticsearch1
+    image: {{ docker_registry }}/elasticsearch/elasticsearch-{{ image_flavor }}:{{ image_tag }}
+    mem_limit: 4g
+    networks:
+      esnet:
+        aliases:
+          - elasticsearch
+    # If unset, uses empty string which Docker ignores
+    # Defined in tests/conftest.py to test starting with a random uid
+    user: ${PROCESS_UID}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${DATA_VOLUME1}:/usr/share/elasticsearch/data
 
   elasticsearch2:
+    container_name: elasticsearch2
     hostname: elasticsearch2
     environment:
-      {% if image_flavor == 'platinum' -%}
-      - ELASTIC_PASSWORD=pleasechangeme
-      {% endif -%}
-      {% if image_flavor == 'platinum' -%}
-      - xpack.security.audit.enabled=true
-      {% endif -%}
       - cluster.name=docker-test-cluster
       - node.name=docker-test-node-2
       - thread_pool.search.queue_size=500
@@ -56,3 +55,26 @@ services:
       - NonESRelatedVariable=bar
       - bootstrap.memory_lock=true
       - cluster.routing.allocation.disk.threshold_enabled=false
+      - discovery.zen.ping.unicast.hosts=elasticsearch1
+      - node.master=false
+    image: {{ docker_registry }}/elasticsearch/elasticsearch-{{ image_flavor }}:{{ image_tag }}
+    mem_limit: 4g
+    networks:
+      - esnet
+    user: ${PROCESS_UID}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${DATA_VOLUME2}:/usr/share/elasticsearch/data
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+
+networks:
+  esnet:
+    driver: bridge

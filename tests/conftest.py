@@ -32,10 +32,6 @@ def pytest_configure(config):
     # Our default is not to override uid; empty strings for --user are ignored by Docker.
     process_uid = ''
     image_flavor = config.getoption('--image-flavor')
-    compose_flags = ('-f docker-compose-{0}.yml -f tests/docker-compose-{0}.yml up -d'.format(image_flavor)).split(' ')
-
-    if config.getoption('--single-node'):
-        compose_flags.append('elasticsearch1')
 
     # Use a host dir for the data volume of Elasticsearch, if specified
     if config.getoption('--mount-datavolume1'):
@@ -50,9 +46,17 @@ def pytest_configure(config):
     env_vars['DATA_VOLUME2'] = datavolume2
     env_vars['PROCESS_UID'] = process_uid
 
-    run(['docker-compose'] + compose_flags, env=env_vars)
+    compose_cli = ['docker-compose', '-f', 'docker-compose.yml', 'up', '-d']
+    compose_dir = '.tedi/build/elasticsearch-%s' % image_flavor
+    if config.getoption('--single-node'):
+        compose_cli.append('elasticsearch1')
+
+    startup_result = run(compose_cli, env=env_vars, cwd=compose_dir)
+    startup_result.check_returncode()
 
 
 def pytest_unconfigure(config):
-    run(['docker-compose', '-f', 'docker-compose-{}.yml'.format(config.getoption('--image-flavor')), 'down', '-v'])
-    run(['docker-compose', '-f', 'docker-compose-{}.yml'.format(config.getoption('--image-flavor')), 'rm', '-f', '-v'])
+    image_flavor = config.getoption('--image-flavor')
+    compose_dir = '.tedi/build/elasticsearch-%s' % image_flavor
+    run(['docker-compose', 'down', '-v'], cwd=compose_dir)
+    run(['docker-compose', 'rm', '-f', '-v'], cwd=compose_dir)

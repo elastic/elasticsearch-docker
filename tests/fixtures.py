@@ -31,20 +31,12 @@ def elasticsearch(host):
             self.flavor = pytest.config.getoption('--image-flavor')
             self.url = 'http://localhost:9200'
 
-            if config.getoption('--image-flavor') == 'platinum':
-                self.auth = HTTPBasicAuth('elastic', Elasticsearch.bootstrap_pwd)
-            else:
-                self.auth = ''
-
             if 'STAGING_BUILD_NUM' in os.environ:
                 self.tag = '%s-%s' % (self.version, os.environ['STAGING_BUILD_NUM'])
             else:
                 self.tag = self.version
 
-            if self.flavor != 'full':
-                self.image = 'docker.elastic.co/elasticsearch/elasticsearch-%s:%s' % (self.flavor, self.tag)
-            else:
-                self.image = 'docker.elastic.co/elasticsearch/elasticsearch:%s' % (self.tag)
+            self.image = 'docker.elastic.co/elasticsearch/elasticsearch-%s:%s' % (self.flavor, self.tag)
 
             self.docker_metadata = json.loads(
                 run(['docker', 'inspect', self.image], stdout=PIPE).stdout.decode())[0]
@@ -64,19 +56,19 @@ def elasticsearch(host):
 
         @retry(**retry_settings)
         def get(self, location='/', **kwargs):
-            return requests.get(self.url + location, auth=self.auth, **kwargs)
+            return requests.get(self.url + location, **kwargs)
 
         @retry(**retry_settings)
         def put(self, location='/', **kwargs):
-            return requests.put(self.url + location, headers=http_api_headers, auth=self.auth, **kwargs)
+            return requests.put(self.url + location, headers=http_api_headers, **kwargs)
 
         @retry(**retry_settings)
         def post(self, location='/%s/1' % default_index, **kwargs):
-            return requests.post(self.url + location, headers=http_api_headers, auth=self.auth, **kwargs)
+            return requests.post(self.url + location, headers=http_api_headers, **kwargs)
 
         @retry(**retry_settings)
         def delete(self, location='/_all', **kwargs):
-            return requests.delete(self.url + location, auth=self.auth, **kwargs)
+            return requests.delete(self.url + location, **kwargs)
 
         def get_root_page(self):
             return self.get('/').json()
@@ -218,11 +210,8 @@ def elasticsearch(host):
             return host.run('hostname').stdout.strip()
 
         def get_docker_log(self):
-            proc = run(['docker-compose',
-                        '-f',
-                        'docker-compose-{}.yml'.format(config.getoption('--image-flavor')),
-                        'logs',
-                        self.get_hostname()],
+            proc = run(['docker-compose', 'logs', self.get_hostname()],
+                       cwd='.tedi/build/elasticsearch-%s' % self.flavor,
                        stdout=PIPE)
             return proc.stdout.decode()
 

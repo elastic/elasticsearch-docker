@@ -8,7 +8,7 @@ Documentation can be found on the [Elastic web site](https://www.elastic.co/guid
 
 ## Supported Docker versions
 
-The images have been tested on Docker 17.03.1-ce.
+The images have been tested on Docker 18.06.1-ce.
 
 ## Requirements
 
@@ -27,9 +27,10 @@ git checkout 6.3
 ELASTIC_VERSION=6.3.1 make
 ```
 
-To build an image with the latest nightly snapshot of Elasticsearch, run:
+To build an image with the latest snapshot of Elasticsearch, run:
 ```
 make from-snapshot
+make test-snapshot
 ```
 
 ## Contributing, issues and testing
