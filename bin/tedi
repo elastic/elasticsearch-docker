@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# This wrapper runs the Tedi build system inside Docker.
+#
+# https://github.com/elastic/tedi/blob/master/README.md
+
+set -euo pipefail
+
+tedi_version="${TEDI_VERSION:-0.13}"
+tedi_debug="${TEDI_DEBUG:-false}"
+elastic_version=$($(dirname ${BASH_SOURCE})/elastic-version)
+
+# Build up a Docker run command.
+declare -a command
+command+=(docker run)
+
+# Mount the Docker socket inside the container, since Tedi interacts with Docker.
+command+=(-v /var/run/docker.sock:/var/run/docker.sock)
+
+# Tedi expects to find our project definition at '/mnt/.tedi'
+command+=(-v $(realpath $(dirname ${BASH_SOURCE})/..):/mnt)
+
+# Pass through some settings from the host environment to the container.
+command+=(-e TEDI_DEBUG=${tedi_debug})
+command+=(-e TEDI_FACT_elastic_version=${elastic_version})
+
+# If you built Elasticsearch from source, set ES_DIR to the root of the
+# Elasticsearch project to build an image from it.
+if [[ -n "${ES_DIR:-}" ]]; then
+  command+=(-v ${ES_DIR}:${ES_DIR})
+  command+=(-e TEDI_FACT_es_dir=${ES_DIR})
+fi
+
+command+=(docker.elastic.co/tedi/tedi:${tedi_version})
+
+echo ${command[@]} "${@}"
+exec ${command[@]} "${@}"

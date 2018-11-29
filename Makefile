@@ -1,15 +1,6 @@
 SHELL = /bin/bash
 ELASTIC_VERSION := $(shell ./bin/elastic-version)
 
-TEDI_DEBUG ?= false
-TEDI_VERSION ?= 0.11
-TEDI ?= docker run --rm \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v $(PWD):/mnt \
-  -v $(PWD)/../..:/release-manager \
-  -e TEDI_DEBUG=$(TEDI_DEBUG) \
-  docker.elastic.co/tedi/tedi:$(TEDI_VERSION)
-
 export PATH := ./bin:./venv/bin:$(PATH)
 
 IMAGE_FLAVORS ?= oss full
@@ -46,30 +37,15 @@ clean:
 	$(TEDI) clean --clean-assets
 
 # Build images from releases on www.elastic.co
-# The ELASTIC_VERSION specified in this file might not have been released yet,
-# so you may need to override it.
+# The default ELASTIC_VERSION might not have been released yet, so you may need
+# to override it in the environment.
 from-release:
-	$(TEDI) build --fact=elastic_version:$(ELASTIC_VERSION) \
-	              --fact=image_tag:$(ELASTIC_VERSION) \
-	              --asset-set=default
+	tedi build
 
 # Build images from snapshots on snapshots.elastic.co
 from-snapshot:
-	$(TEDI) build --fact=elastic_version:$(ELASTIC_VERSION) \
-	              --fact=image_tag:$(ELASTIC_VERSION)-SNAPSHOT \
-	              --asset-set=snapshot
-
-# Build release images from within the Release Manager.
-release-manager-release: clean
-	$(TEDI) build --fact=elastic_version:$(ELASTIC_VERSION) \
-	              --fact=image_tag:$(ELASTIC_VERSION) \
-	              --asset-set=local_release
-
-# Build snapshot images from within the Release Manager.
-release-manager-snapshot: clean
-	$(TEDI) build --fact=elastic_version:$(ELASTIC_VERSION) \
-	              --fact=image_tag:$(ELASTIC_VERSION)-SNAPSHOT \
-	              --asset-set=local_snapshot
+	tedi build --asset-set=snapshot \
+	           --fact=image_tag:$(ELASTIC_VERSION)-SNAPSHOT
 
 # The tests are written in Python. Make a virtualenv to handle the dependencies.
 venv: requirements.txt
