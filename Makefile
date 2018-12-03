@@ -34,7 +34,7 @@ clean:
 	    docker-compose -f $$COMPOSE_FILE down && docker-compose -f $$COMPOSE_FILE rm -f -v; \
 	  fi; \
 	)
-	$(TEDI) clean --clean-assets
+	tedi clean --clean-assets
 
 # Build images from releases on www.elastic.co
 # The default ELASTIC_VERSION might not have been released yet, so you may need
